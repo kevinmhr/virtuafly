@@ -18,7 +18,8 @@ positionl =$6045
 character =$4006
 bgcharxs =$023
 bgcharys =$022
- 
+charactertemporary = $026
+charactercolour = $27
 *=$0801
         !byte    $1E, $08, $0A, $00, $9E, $20, $28,  $32, $30, $38, $30, $29, $3a, $8f, $20, $28, $43, $29, $20, $32, $30, $32, $31, $20, $4D, $54, $53, $56, $00, $00, $00
  
@@ -29,12 +30,13 @@ sta $d020
 sta $d021
 lda #$04
 sta positionh
- 
-lda #20
-sta positionl
- 
 lda #90
 sta character
+lda #20
+sta positionl
+lda #02
+sta charactercolour
+
  
 lda #$18
 sta $d018
@@ -79,48 +81,46 @@ stopcpy
          sta $01
 
 
+
+         
+         
 mainloop
- 
+         
+         
+         
 jsr cls
- 
-
- 
-
- 
 jsr scanjoy
 jsr movejoy
-
 inc whiteblock
-
-
 jsr display
-lda #90
-sta character
- 
 jsr mainloop
 rts
 scanjoy            
      
            lda $dc00
-            ;cmp #$7f
-           ; beq setdirection
+            
+            sta lastkey
+            cmp #$7f
+            beq setdirection
           ; cmp #$6f
           ; beq setdirection 
-           
-
+       
            sta lastkey
 
            rts
 setdirection	
- 
+
  rts
 joylock 
- 
+
   lda lastkey
   cmp $dc00
   beq counttounlock
- 
+
 counttounlock
+ 
+  
+  
 inx
 lda $400,x
 lda $400,x
@@ -140,9 +140,13 @@ lda $400,x
 lda $400,x
 lda $400,x
 lda $400,x
-cpx #$ff
-bne joylock
+lda $400,x
+lda $400,x
+ 
 
+ cpx #$ff
+ bne joylock
+ 
 
  rts
 
@@ -158,16 +162,6 @@ sta $0600,y
 sta $06f0,y
 ;iny
  
-
-
-clstwo
-;lda bgcharxs
- 
-;sta $0400,y  
-;sta $0500,y  
-;sta $0600,y  
-;sta $06f0,y
- 
  
 ;rts
 clscol
@@ -177,10 +171,11 @@ sta $d900,y
 sta $da00,y  
 sta $daf0,y 
 iny 
-;bne clscol
+ ;bne clscol
 rts
 
- 
+
+
 movejoy 
                 
                 lda lastkey
@@ -197,26 +192,11 @@ movejoy
                 beq shoot
 				rts
 				
-shoot 
- 
-jsr expnoz
-
-lda positionl
-sbc #40
-
-
-sta positionl
-
-bcc decreasehibyte 
-
-lda #90
-sta character
- 
-jsr display 
 
 
 
-rts   				
+
+
 left 
  
   jsr tickingsound
@@ -225,14 +205,18 @@ left
     sec
     sbc #01
     sta positionl
-  bcc decreaselowbyte 
+  bcc counterrecount
  
  jsr joylock
    
      jsr display
      
     rts
-    
+counterrecount
+jsr decreasehibyte
+lda #255
+sta positionl
+rts
 right 
  
  
@@ -241,26 +225,15 @@ jsr tickingsound
     clc
     adc #01
     sta positionl
-  bcs increaselowbyte
+  bcs recount
  jsr joylock
     jsr display
    
     rts
-up
- 
- 
-jsr tickingsound
-  lda positionl
-    sec
-    sbc #40
-    sta positionl
-   
- 
- bcc decreasehibyte
- 
- jsr joylock
-  jsr display
- 
+recount
+jsr incresehighbyte
+lda #0
+sta positionl
 rts
 
 down
@@ -279,8 +252,46 @@ down
  
   
     rts
+up
+ 
+ 
+jsr tickingsound
+  lda positionl
+    sec
+    sbc #40
+    sta positionl
+   
+ 
+ bcc decreasehibyte
+ 
+ jsr joylock
+  jsr display
+ 
+rts
+shoot
+
+jsr expnoz
+jsr display
 
 
+lda positionl
+sbc #40
+sta positionl
+
+bcc decreasehibyte 
+ 
+
+rts   			
+
+decreasehibyte   
+ 
+dec positionh
+lda positionh
+cmp #0
+beq inchibyteagain
+jsr display
+ 
+rts
 
 
 
@@ -299,29 +310,21 @@ dechibyteagain
 lda #01
 sta positionh
 increaselowbyte
-lda positionl
-sbc #16
-sta positionl
+ lda positionl
+adc #23
+ sta positionl
 
 
 rts
 
-decreasehibyte   
 
-dec positionh
-lda positionh
-cmp #0
-beq inchibyteagain
-jsr display
- 
-rts
 inchibyteagain
 lda #04
 sta positionh
 decreaselowbyte
 
 lda positionl
-adc #15
+sbc #24
 sta positionl
 rts
 display 
@@ -345,35 +348,38 @@ displaypageone
 
 lda character
 sta $0400,x
+lda charactercolour
 sta $d800,x
-jsr mainloop 
+ 
 rts
 displaypagetwo
 
 lda character 
 sta $0500,x
+lda charactercolour
 sta $d900,x
-jsr mainloop  
+ 
 rts
 displaypagethree
  
 lda character 
 sta $0600,x
+lda charactercolour
 sta $da00,x
-jsr mainloop  
+ 
 rts
 
 
 displaypagefour
+ 
 
 lda character 
 sta $0700,x
+lda charactercolour
 sta $db00,x
-jsr mainloop  
-rts
-
  
-    
+rts
+ 
   
 
 
