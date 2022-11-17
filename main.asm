@@ -43,8 +43,10 @@ lda #20
 sta positionl
 lda #02
 sta charactercolour
-
- 
+lda #0
+sta scoreones
+sta scoretens 
+sta scorehunds
 lda #$18
 sta $d018
           
@@ -91,20 +93,22 @@ stopcpy
          
          
 mainloop
-lda positionl
-sta sheet
-
+ 
+ 
+ 
 jsr cls
+
 jsr scanjoy
+
 jsr movejoy
 inc whiteblock
-inc objectspositionl
+
 jsr objectsrule         
-inc objectspositionl
+ 
 inc objectschar         
 jsr displayobjects
 jsr display
-jsr collision
+
 jsr printscore
 jsr mainloop
 rts
@@ -117,9 +121,9 @@ scanjoy
             beq setdirection
           ; cmp #$6f
           ; beq setdirection 
-       
+           
            sta lastkey
-
+       
            rts
 setdirection	
 
@@ -144,28 +148,13 @@ lda $400,x
  lda $400,x
  lda $400,x
 lda $400,x
- lda $400,x
- lda $400,x
- lda $400,x
- lda $400,x
- lda $400,x
- lda $400,x
- lda $400,x
- lda $400,x
- lda $400,x
- lda $400,x
- lda $400,x
- lda $400,x
- lda $400,x
+ 
+ 
 afewer
  lda $400,x
  lda $400,x
  lda $400,x
- lda $400,x
- lda $400,x
- lda $400,x
- lda $400,x
- lda $400,x
+ 
 
  cpx #$ff
  bne joylock
@@ -228,9 +217,9 @@ left
     sbc #01
     sta positionl
   bcc counterrecount
- 
+ jsr collision
  jsr joylock
-   
+    
      jsr display
      
     rts
@@ -248,7 +237,9 @@ jsr tickingsound
     adc #01
     sta positionl
   bcs recount
+ jsr collision
  jsr joylock
+  
     jsr display
    
     rts
@@ -268,8 +259,9 @@ down
     sta positionl
     
     bcs incresehighbyte
- 
+ jsr collision
  jsr joylock
+ 
  jsr display
  
   
@@ -285,8 +277,9 @@ jsr tickingsound
    
  
  bcc decreasehibyte
- 
+ jsr collision
  jsr joylock
+  
   jsr display
  
 rts
@@ -403,22 +396,26 @@ clc
 
 jsr lazbeep3 
 
-;lda positionl
-
-inc objectspositionl
+ 
 lda objectspositionl
-adc sheet
-adc objectspositionl
+ iny
+
+adc SINEX0,y
+  iny
+ 
+  
+bcs increaseobjecthighbyte
+ 
 sta objectspositionl 
  
  
 bcs increaseobjecthighbyte
- ;jsr counttounlock
+ jsr joylock
 
 rts
 increaseobjecthighbyte
 inc objectspositionh
-cmp #04 
+cmp #05 
 beq objecthighreset
 
 rts
@@ -484,25 +481,33 @@ sta $db00,x
 rts
 
 collision
- ldx #$d0
-jsr joylock
-lsr sheet
-lda objectspositionl
+ 
+ 
+ 
+ldy positionl
 
-cmp positionl
+               
+cpy objectspositionl
+ 
+
+ 
 beq addscore
- 
- 
+  ldx #$d0
+ jsr joylock
+rts 
 decreasescore
- 
+dec scoreones
 rts
 addscore		clc
-				lsr objectspositionl
+				 
+				;jsr joylock
 				inc scoreones
 				jsr lazbeep1
 			 
-				 
-				
+               lda objectspositionl
+               adc #46
+              sta objectspositionl
+ 
  
 				
 				lda scoreones
@@ -511,9 +516,11 @@ addscore		clc
 				 
 				cmp #$ 
 				beq addtens		
+				jsr mainloop
 				rts
 
-addtens			inc scoretens
+addtens			jsr decreasescore
+                inc scoretens
 				lda #00
 				sta scoreones
 			    lda scoretens
@@ -550,7 +557,23 @@ printscore
 				lda #01
 				sta $d866	
 				rts
-
+SINEX0  ; X POSITION 1              
+        !byte 155,155,155,155,155,155,155,154,154,154,153,153,152,152,151,151
+        !byte 150,149,149,148,147,146,146,145,144,143,142,141,140,139,138,137
+        !byte 135,134,133,132,131,129,128,127,125,124,123,121,120,118,117,115
+       !byte 91,89,88,86,85,83,81,80,78,77,75,73,72,70,69,67
+        !byte 66,64,63,61,60,59,57,56,54,53,52,51,49,48,47,46
+        !byte 45,43,42,41,40,39,38,37,36,36,35,34,33,32,32,31
+        !byte 30,30,29,29,28,28,27,27,27,26,26,26,26,26,26,26
+        !byte 26,26,26,26,26,26,26,27,27,27,28,28,28,29,29,30
+        
+        !byte 26,26,26,26,26,26,26,27,27,27,28,28,28,29,29,30
+        !byte 31,31,32,33,33,34,35,36,37,38,39,40,41,42,43,44
+        !byte 45,46,47,49,50,51,52,54,55,56,58,59,60,62,63,65
+        !byte 66,68,69,71,72,74,75,77,79,80,82,83,85,86,88,90
+        !byte 151,150,150,149,148,147,146,146,145,144,143,142,141,140,139,137
+        !byte 136,135,134,133,131,130,129,128,126,125,123,122,121,119,118,116
+        !byte 115,113,112,110,109,107,105,104,102,101,99,97,96,94,93,91
 
  
  !source "sounds.asm"
