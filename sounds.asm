@@ -123,15 +123,17 @@ lazbeep2
          rts
 lazbeep3
          jsr soundend2
-         lda #%00001001 ; 0 9
+         lda #%00000111 ; 0 9
          sta attdec
-         lda #%00000000 ; 0 0
+         lda #%00001111 ; 0 0
          sta susrel
          lda #15        ; 15
          sta volume
-         lda #$ff      ; 13
+         lda positionl    ; 13
          sta hifreq
-         lda #3         ; 9 bit higher
+         lda objectspositionl    ; 9 bit higher
+         lsr 
+         ora positionl
          sta lofreq
          lda #32   ; 32 saw
          sta wavefm
