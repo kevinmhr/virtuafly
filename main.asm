@@ -27,6 +27,7 @@ scoreones =$40ff
 scoretens =$40fe
 sheet = $31
 scorehunds = $40fd
+scorethous = $40fa 
 *=$0801
         !byte    $1E, $08, $0A, $00, $9E, $20, $28,  $32, $30, $38, $30, $29, $3a, $8f, $20, $28, $43, $29, $20, $32, $30, $32, $31, $20, $4D, $54, $53, $56, $00, $00, $00
  
@@ -41,7 +42,7 @@ lda #90
 sta character
 lda #20
 sta positionl
-lda #02
+lda #03
 sta charactercolour
 lda #0
 sta scoreones
@@ -49,10 +50,11 @@ sta scoretens
 sta scorehunds
 lda #$18
 sta $d018
-          
+ lda #01
+ sta objectspositionh
 lda #76
 sta bgchar 
- 
+sta objectschar
 lda $01    
 and #251    
 sta $01    
@@ -95,23 +97,31 @@ stopcpy
 mainloop
  
  
- 
+
 jsr cls
+
 
 jsr scanjoy
 
 jsr movejoy
-inc whiteblock
+jsr cls
 
-jsr objectsrule         
+inc objectschar      
+
+jsr objectsrule       
  
-inc objectschar         
-jsr displayobjects
+ 
 jsr display
-
+jsr displayobjects
 jsr printscore
+ 
 jsr mainloop
 rts
+ 
+ 
+        
+
+
 scanjoy            
      
            lda $dc00
@@ -129,7 +139,7 @@ setdirection
 
  rts
 joylock 
-
+ 
   lda lastkey
   cmp $dc00
   beq counttounlock
@@ -139,21 +149,16 @@ counttounlock
   
   
 inx
-lda $400,x
- lda $400,x
- lda $400,x
- lda $400,x
- lda $400,x
- lda $400,x
- lda $400,x
- lda $400,x
-lda $400,x
- 
  
 afewer
  lda $400,x
  lda $400,x
  lda $400,x
+  lda $400,x
+  lda $400,x
+ lda $400,x
+ lda $400,x
+  lda $400,x
  
 
  cpx #$ff
@@ -392,30 +397,32 @@ sta $db00,x
  
 rts
 objectsrule
-clc
-
-jsr lazbeep3 
+ 
 
  
-lda objectspositionl
- iny
+ 
+ jsr lazbeep3 
+ 
 
-adc SINEX0,y
-  iny
+ iny
+ iny
+ iny
+ 
  
   
-bcs increaseobjecthighbyte
+lda objectspositionl  
+jsr increaseobjecthighbyte
  
-sta objectspositionl 
+sta objectspositionl  
  
  
-bcs increaseobjecthighbyte
- jsr joylock
+ 
 
 rts
+ 
 increaseobjecthighbyte
 inc objectspositionh
-cmp #05 
+cmp #04 
 beq objecthighreset
 
 rts
@@ -481,12 +488,11 @@ sta $db00,x
 rts
 
 collision
- 
+ inc charactercolour
  
  
 ldy positionl
-
-               
+     
 cpy objectspositionl
  
 
@@ -495,31 +501,35 @@ beq addscore
   ldx #$d0
  jsr joylock
 rts 
-decreasescore
-dec scoreones
+ 
+zeroscore
+lda #0
+sta scoreones
 rts
 addscore		clc
 				 
-				;jsr joylock
+				
 				inc scoreones
-				jsr lazbeep1
+				jsr expnoz
 			 
-               lda objectspositionl
-               adc #46
-              sta objectspositionl
+                lda objectspositionl
+                adc #46
+              
+                 sta objectspositionl
  
- 
+               
 				
 				lda scoreones
 				sec
 				sbc #10
-				 
+			 
 				cmp #$ 
-				beq addtens		
+				beq addtens
+			    
 				jsr mainloop
 				rts
 
-addtens			jsr decreasescore
+addtens			 
                 inc scoretens
 				lda #00
 				sta scoreones
@@ -528,14 +538,31 @@ addtens			jsr decreasescore
 				sbc #10
 			    cmp #$
 			    beq addhunds
+				 
 				rts 
 addhunds        inc scorehunds
                 lda #00
 				sta scoreones
 				lda #00
 				sta scoretens
+				lda scorehunds
+			    sec
+				sbc #10
+			    cmp #$
+			    beq addthous
+			 
+				rts 
+
 				rts
-				
+addthous        inc scorethous
+                lda #00
+				sta scoreones
+				lda #00
+				sta scoretens
+			    lda #00
+				sta scorehunds
+			 
+				rts				
 printscore		 
 				
 			  
@@ -555,25 +582,17 @@ printscore
 				adc #$30
 				sta $0466
 				lda #01
-				sta $d866	
+				sta $d866
+				lda scorethous
+				adc #$30
+				sta $0465
+				lda #01
+				sta $d865	
 				rts
-SINEX0  ; X POSITION 1              
-        !byte 155,155,155,155,155,155,155,154,154,154,153,153,152,152,151,151
-        !byte 150,149,149,148,147,146,146,145,144,143,142,141,140,139,138,137
-        !byte 135,134,133,132,131,129,128,127,125,124,123,121,120,118,117,115
-       !byte 91,89,88,86,85,83,81,80,78,77,75,73,72,70,69,67
-        !byte 66,64,63,61,60,59,57,56,54,53,52,51,49,48,47,46
-        !byte 45,43,42,41,40,39,38,37,36,36,35,34,33,32,32,31
-        !byte 30,30,29,29,28,28,27,27,27,26,26,26,26,26,26,26
-        !byte 26,26,26,26,26,26,26,27,27,27,28,28,28,29,29,30
-        
-        !byte 26,26,26,26,26,26,26,27,27,27,28,28,28,29,29,30
-        !byte 31,31,32,33,33,34,35,36,37,38,39,40,41,42,43,44
-        !byte 45,46,47,49,50,51,52,54,55,56,58,59,60,62,63,65
-        !byte 66,68,69,71,72,74,75,77,79,80,82,83,85,86,88,90
-        !byte 151,150,150,149,148,147,146,146,145,144,143,142,141,140,139,137
-        !byte 136,135,134,133,131,130,129,128,126,125,123,122,121,119,118,116
-        !byte 115,113,112,110,109,107,105,104,102,101,99,97,96,94,93,91
+ 
+charboxscr
+         !byte 1,2,3,4,41,42,43,44,81,82,83,84,121,122,123,124
+
 
  
  !source "sounds.asm"

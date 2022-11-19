@@ -129,13 +129,14 @@ lazbeep3
          sta susrel
          lda #15        ; 15
          sta volume
+         
          lda positionl    ; 13
          sta hifreq
          lda objectspositionl    ; 9 bit higher
-         lsr 
+        
          ora positionl
          sta lofreq
-         lda #32   ; 32 saw
+         lda #15   ; 32 saw
          sta wavefm
 
          jsr soundgo2
