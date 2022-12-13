@@ -78,6 +78,11 @@ lda $d600,x
 sta $2600,x
 lda $d700,x
 sta $2700,x
+         
+
+ 
+ 
+
  
 inx
  
@@ -91,20 +96,35 @@ stopcpy
          sta $01
 
 
-
-         
+lda circle1 
+sta $2260 
+lda circle2 
+sta $2261 
+lda circle3 
+sta $2262 
+lda circle4 
+sta $2263  
+lda circle5 
+sta $2264 
+lda circle6 
+sta $2265  
+lda circle7 
+sta $2266 
+ lda circle8 
+sta $2267         
          
 mainloop
  
+ jsr charanim
  
-
-jsr cls
-
+ 
+ jsr cls
+ 
 
 jsr scanjoy
 
 jsr movejoy
-jsr cls
+ jsr cls
 
 inc objectschar      
 
@@ -118,7 +138,23 @@ jsr printscore
 jsr mainloop
 rts
  
+charanim
+
+ inc $2260 
  
+         inc $2261
+ inc $2262
+ 
+  inc $2263 
+ 
+  inc $2264
+  inc $2265
+  inc $2266
+    inc $2267
+ 
+ 
+  rts
+  
         
 
 
@@ -131,12 +167,22 @@ scanjoy
             beq setdirection
           ; cmp #$6f
           ; beq setdirection 
-           
+    inc $2260 
+ 
+         inc $2261
+ inc $2262
+ 
+  inc $2263 
+ 
+  inc $2264
+  inc $2265
+  inc $2266
+    inc $2267
            sta lastkey
        
            rts
 setdirection	
-
+  
  rts
 joylock 
  
@@ -177,17 +223,19 @@ sta $0400,y
 sta $0500,y  
 sta $0600,y  
 sta $06f0,y
-;iny
  
  
 ;rts
 clscol
-lda #6
-sta $d800,y  
-sta $d900,y  
-sta $da00,y  
-sta $daf0,y 
+;lda #6
+adc #3
+inx
+sta $d800,x  
+sta $d900,x  
+sta $da00,x  
+sta $daf0,x 
 iny 
+inx
  ;bne clscol
 rts
 
@@ -513,11 +561,11 @@ addscore		clc
 				jsr expnoz
 			 
                 lda objectspositionl
-                adc #46
+                adc #122
               
                  sta objectspositionl
  
-               
+               inc objectschar
 				
 				lda scoreones
 				sec
@@ -525,7 +573,7 @@ addscore		clc
 			 
 				cmp #$ 
 				beq addtens
-			    
+			     jsr joylock
 				jsr mainloop
 				rts
 
@@ -593,7 +641,22 @@ printscore
 charboxscr
          !byte 1,2,3,4,41,42,43,44,81,82,83,84,121,122,123,124
 
-
+circle1
+ !byte %0011100
+circle2 
+ !byte %0100010
+circle3 
+ !byte %1000001
+circle4 
+ !byte %1000001
+circle5 
+ !byte %1000001
+circle6 
+ !byte %0100010
+circle7 
+ !byte %0011100
+circle8 
+ !byte %0000000
  
  !source "sounds.asm"
 
