@@ -21,7 +21,7 @@ character2 =$4008
 character3 =$4009
  
 bgchar =$022
-bgcolor =$023
+bgcolor =$024
 charactertemporary = $026
 charactercolour = $27
 objectschar = $28
@@ -42,13 +42,13 @@ sta $d020
 sta $d021
 lda #$04
 sta positionh
-lda #241
+lda #251
 sta character
-lda #242
+lda #252
 sta character1
-lda #243
+lda #253
 sta character2
-lda #244
+lda #254
 sta character3
 lda #20
 sta positionl
@@ -60,10 +60,14 @@ sta scoretens
 sta scorehunds
 lda #$18
 sta $d018
- lda #01
+ lda #02
  sta objectspositionh
+ lda #02
+ sta objectspositionl
 lda #76
 sta bgchar 
+lda #2
+sta bgcolor 
 sta objectschar
 lda $01    
 and #251    
@@ -122,34 +126,37 @@ lda circle7
 sta $2266 
  lda circle8 
 sta $2267         
-         
+   jsr cls      
 mainloop
+
+
+jsr display
  
-   jsr charanim
-  jsr cls
- inc charactercolour
+jsr cls
+
+jsr resetobjecthighbyte
+ 
+  ; jsr charanim
+
+ 
  
 ; inc bgcolor
  
 jsr scanjoy
-  jsr cls
-jsr movejoy
  
-lda bgcolor
+jsr movejoy
 
-sta $d800,x  
-sta $d900,x  
-sta $da00,x  
-sta $daf0,x
+ 
  
 inc objectschar      
 
-jsr objectsrule       
+   
+inc charactercolour
  
  
  
- jsr display
 jsr displayobjects
+ jsr collision
 jsr printscore
  
 jsr mainloop
@@ -235,27 +242,29 @@ afewer
 cls
  
 lda bgchar 
-
+ 
 sta $0400,y  
 sta $0500,y  
 sta $0600,y  
 sta $06f0,y
  
-
+ 
+ 
  
 ;rts
 clscol
 ;lda #6
-inx
+ 
 lda bgcolor
  
-sta $d800,x  
-sta $d900,x  
-sta $da00,x  
-sta $daf0,x 
+sta $d800,y  
+sta $d900,y  
+sta $da00,y 
+sta $daf0,y 
  iny 
-inx
- ;bne clscol
+ 
+ 
+clsdone
 rts
 
 
@@ -498,42 +507,38 @@ sta $db01,x
 sta $dad8,x
 sta $dad9,x
 rts
-objectsrule
+ 
+ 
+
+ 
  
 
  
  
- jsr lazbeep3 
  
+ 
+ 
+resetobjecthighbyte 
 
- iny
- iny
- iny
- 
- 
-  
-lda objectspositionl  
-jsr increaseobjecthighbyte
- 
-sta objectspositionl  
- 
- 
- 
-
-rts
- 
-increaseobjecthighbyte
-inc objectspositionh
+lda objectspositionh
 cmp #04 
 beq objecthighreset
-
+inc objectspositionh
 rts
 objecthighreset
 lda #0
 sta objectspositionh
+inc objectspositionh
 rts
 
 displayobjects 
+ 
+ jsr lazbeep3 
+ 
+  
+
+
+
 lda objectspositionh
 ldx objectspositionl
 cmp #$01
@@ -609,18 +614,18 @@ rts
  
 
 collision
- inc charactercolour
+  
  
  
-ldy positionl
+lda positionl
      
-cpy objectspositionl
+cmp objectspositionl
  
 
  
 beq addscore
-  ldx #$d0
- jsr joylock
+ 
+ 
 rts 
  
 zeroscore
@@ -637,6 +642,8 @@ addscore		clc
                 adc #122
               
                  sta objectspositionl
+               jsr objecthighreset
+              
  
                inc objectschar
 				

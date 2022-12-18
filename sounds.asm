@@ -130,12 +130,12 @@ lazbeep3
          lda #15        ; 15
          sta volume
          
-         lda objectspositionl
-         ora positionl; 13
-         sta hifreq
-         lda objectspositionl   ; 9 bit higher
         
-         ora positionl
+        lda positionl; 13
+         sta hifreq
+         lda positionl   ; 9 bit higher
+        
+        
          sta lofreq
          lda #25  ; 32 saw
          sta wavefm
