@@ -16,8 +16,12 @@ appleblock =$38
 positionh =$6044
 positionl =$6045
 character =$4006
+character1 =$4007
+character2 =$4008
+character3 =$4009
  
 bgchar =$022
+bgcolor =$023
 charactertemporary = $026
 charactercolour = $27
 objectschar = $28
@@ -38,8 +42,14 @@ sta $d020
 sta $d021
 lda #$04
 sta positionh
-lda #90
+lda #241
 sta character
+lda #242
+sta character1
+lda #243
+sta character2
+lda #244
+sta character3
 lda #20
 sta positionl
 lda #03
@@ -115,23 +125,30 @@ sta $2267
          
 mainloop
  
- jsr charanim
+   jsr charanim
+  jsr cls
+ inc charactercolour
  
+; inc bgcolor
  
- jsr cls
- 
-
 jsr scanjoy
-
+  jsr cls
 jsr movejoy
- jsr cls
+ 
+lda bgcolor
 
+sta $d800,x  
+sta $d900,x  
+sta $da00,x  
+sta $daf0,x
+ 
 inc objectschar      
 
 jsr objectsrule       
  
  
-jsr display
+ 
+ jsr display
 jsr displayobjects
 jsr printscore
  
@@ -224,17 +241,19 @@ sta $0500,y
 sta $0600,y  
 sta $06f0,y
  
+
  
 ;rts
 clscol
 ;lda #6
-adc #3
 inx
+lda bgcolor
+ 
 sta $d800,x  
 sta $d900,x  
 sta $da00,x  
 sta $daf0,x 
-iny 
+ iny 
 inx
  ;bne clscol
 rts
@@ -411,26 +430,53 @@ beq displaypagefour
 rts 
 displaypageone
 
-lda character
+lda character 
 sta $0400,x
+lda character1 
+sta $0401,x
+lda character2 
+sta $03d8,x
+lda character3 
+sta $03d9,x
 lda charactercolour
 sta $d800,x
+sta $d801,x
+sta $d7d8,x
+sta $d7d9,x
  
 rts
 displaypagetwo
 
 lda character 
 sta $0500,x
+lda character1 
+sta $0501,x
+lda character2 
+sta $04d8,x
+lda character3 
+sta $04d9,x
 lda charactercolour
 sta $d900,x
+sta $d901,x
+sta $d8d8,x
+sta $d8d9,x
  
 rts
 displaypagethree
  
-lda character 
+lda character
 sta $0600,x
+lda character1 
+sta $0601,x
+lda character2 
+sta $05d8,x
+lda character3 
+sta $05d9,x
 lda charactercolour
 sta $da00,x
+sta $da01,x
+sta $d9d8,x
+sta $d9d9,x
  
 rts
 
@@ -440,9 +486,17 @@ displaypagefour
 
 lda character
 sta $0700,x
+lda character1 
+sta $0701,x
+lda character2 
+sta $06d8,x
+lda character3 
+sta $06d9,x
 lda charactercolour
 sta $db00,x
- 
+sta $db01,x
+sta $dad8,x
+sta $dad9,x
 rts
 objectsrule
  
@@ -493,33 +547,46 @@ beq displayobjectsfour
 
 rts
 
-
-
 displayobjectsone
 
 lda objectschar
 sta $0400,x
-ldx objectspositionl
-lda #$03
+sta $0401,x
+sta $03d8,x
+sta $03d9,x
+lda charactercolour
 sta $d800,x
+sta $d801,x
+sta $d7d8,x
+sta $d7d9,x
  
 rts
 displayobjectstwo
 
 lda objectschar
 sta $0500,x
-ldx objectspositionl
-lda #$03
+sta $0501,x
+sta $04d8,x
+sta $04d9,x
+lda charactercolour
 sta $d900,x
+sta $d901,x
+sta $d8d8,x
+sta $d8d9,x
  
 rts
 displayobjectsthree
  
 lda objectschar
 sta $0600,x
-ldx objectspositionl
-lda #$03
+sta $0601,x
+sta $05d8,x
+sta $05d9,x
+lda charactercolour
 sta $da00,x
+sta $da01,x
+sta $d9d8,x
+sta $d9d9,x
  
 rts
 
@@ -529,11 +596,17 @@ displayobjectsfour
 
 lda objectschar
 sta $0700,x
-ldx objectspositionl
-lda #$03
+sta $0701,x
+sta $06d8,x
+sta $06d9,x
+lda charactercolour
 sta $db00,x
- 
+sta $db01,x
+sta $dad8,x
+sta $dad9,x
 rts
+
+ 
 
 collision
  inc charactercolour
@@ -556,7 +629,7 @@ sta scoreones
 rts
 addscore		clc
 				 
-				
+				inc bgcolor
 				inc scoreones
 				jsr expnoz
 			 
@@ -657,6 +730,12 @@ circle7
  !byte %0011100
 circle8 
  !byte %0000000
+ 
+ 
+ 
+
+
+  
  
  !source "sounds.asm"
 

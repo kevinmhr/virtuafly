@@ -68,7 +68,7 @@ soundend3
          
 tickingsound
          jsr soundend2
-         lda #%00000111 ; 0 9
+         lda #%00000011 ; 0 9
          sta attdec
          lda #%00000000 ; 0 0
          sta susrel
@@ -125,18 +125,18 @@ lazbeep3
          jsr soundend2
          lda #%00000111 ; 0 9
          sta attdec
-         lda #%00001111 ; 0 0
+         lda #%00000111 ; 0 0
          sta susrel
          lda #15        ; 15
          sta volume
          
          lda positionl    ; 13
          sta hifreq
-         lda objectspositionl    ; 9 bit higher
+         lda positionl    ; 9 bit higher
         
-         ora positionl
+         ora objectspositionl
          sta lofreq
-         lda #15   ; 32 saw
+         lda #25  ; 32 saw
          sta wavefm
 
          jsr soundgo2
@@ -144,7 +144,7 @@ lazbeep3
 
 expnoz
          jsr soundend3
-         lda #%00011001 ; 1 9
+         lda #%00001001 ; 1 9
          sta attdec
          lda #%00000000 ; 0 0
          sta susrel
@@ -154,7 +154,7 @@ expnoz
          sta hifreq
          lda #16        ; 16
          sta lofreq
-         lda #128       ; 128 noise
+         lda #32       ; 128 noise
          sta wavefm
 
          jsr soundgo3
