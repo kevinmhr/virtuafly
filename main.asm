@@ -24,9 +24,15 @@ bgchar =$022
 bgcolor =$024
 charactertemporary = $026
 charactercolour = $27
-objectschar = $28
+objectschar1 = $6677
+objectschar2 = $6689
+objectschar3 = $6643
+objectschar4 = $6699
+bulletchar =$6634
 objectspositionh = $29
 objectspositionl = $30
+bulletpositionh = $6848
+bulletpositionl = $6248
 scoreones =$40ff
 scoretens =$40fe
 sheet = $31
@@ -42,13 +48,13 @@ sta $d020
 sta $d021
 lda #$04
 sta positionh
-lda #251
+lda #125
 sta character
-lda #252
+lda #109
 sta character1
-lda #253
+lda #105
 sta character2
-lda #254
+lda #95
 sta character3
 lda #20
 sta positionl
@@ -68,7 +74,16 @@ lda #76
 sta bgchar 
 lda #2
 sta bgcolor 
-sta objectschar
+lda #73
+sta objectschar1
+lda #85
+sta objectschar2
+lda #74
+sta objectschar3
+lda #75
+sta objectschar4
+lda #81
+sta bulletchar
 lda $01    
 and #251    
 sta $01    
@@ -128,12 +143,12 @@ sta $2266
 sta $2267         
    jsr cls      
 mainloop
-
+ 
 
 jsr display
  
 jsr cls
-
+ 
 jsr resetobjecthighbyte
  
   ; jsr charanim
@@ -148,11 +163,10 @@ jsr movejoy
 
  
  
-inc objectschar      
+
 
    
 inc charactercolour
- 
  
  
 jsr displayobjects
@@ -189,9 +203,13 @@ scanjoy
            sta lastkey
             cmp #$7f
             beq setdirection
-          ; cmp #$6f
+        
+          ;  cmp #$6f
           ; beq setdirection 
-    inc $2260 
+                cmp #$6f
+                beq readyforshoot
+           sta lastkey
+           inc $2260 
  
          inc $2261
  inc $2262
@@ -202,11 +220,24 @@ scanjoy
   inc $2265
   inc $2266
     inc $2267
-           sta lastkey
-       
            rts
+           
+           
+           
+readyforshoot
+
+ 
+jsr displaybullet
+ jsr lazbeep2
+;jsr joylock
+rts     
 setdirection	
-  
+ 
+ lda positionl
+sta bulletpositionl
+lda positionh
+ 
+sta bulletpositionh
  rts
 joylock 
  
@@ -280,8 +311,7 @@ movejoy
 				beq right
 				cmp #$7d   
 				beq down
-                cmp #$6f
-                beq shoot
+               
 				rts
 				
 
@@ -364,18 +394,8 @@ jsr tickingsound
   jsr display
  
 rts
-shoot
 
-jsr expnoz
-jsr display
-
-
-lsr sheet
-
-bcc decreasehibyte 
  
-
-rts   			
 
 decreasehibyte   
  
@@ -444,14 +464,14 @@ sta $0400,x
 lda character1 
 sta $0401,x
 lda character2 
-sta $03d8,x
+sta $0428,x
 lda character3 
-sta $03d9,x
+sta $0429,x
 lda charactercolour
 sta $d800,x
 sta $d801,x
-sta $d7d8,x
-sta $d7d9,x
+sta $d828,x
+sta $d829,x
  
 rts
 displaypagetwo
@@ -461,14 +481,14 @@ sta $0500,x
 lda character1 
 sta $0501,x
 lda character2 
-sta $04d8,x
+sta $0528,x
 lda character3 
-sta $04d9,x
+sta $0529,x
 lda charactercolour
 sta $d900,x
 sta $d901,x
-sta $d8d8,x
-sta $d8d9,x
+sta $d928,x
+sta $d929,x
  
 rts
 displaypagethree
@@ -478,14 +498,14 @@ sta $0600,x
 lda character1 
 sta $0601,x
 lda character2 
-sta $05d8,x
+sta $0628,x
 lda character3 
-sta $05d9,x
+sta $0629,x
 lda charactercolour
 sta $da00,x
 sta $da01,x
-sta $d9d8,x
-sta $d9d9,x
+sta $da28,x
+sta $da29,x
  
 rts
 
@@ -498,14 +518,14 @@ sta $0700,x
 lda character1 
 sta $0701,x
 lda character2 
-sta $06d8,x
+sta $0728,x
 lda character3 
-sta $06d9,x
+sta $0729,x
 lda charactercolour
 sta $db00,x
 sta $db01,x
-sta $dad8,x
-sta $dad9,x
+sta $db28,x
+sta $db29,x
 rts
  
  
@@ -554,10 +574,13 @@ rts
 
 displayobjectsone
 
-lda objectschar
+lda objectschar1
 sta $0400,x
+lda objectschar2
 sta $0401,x
+lda objectschar3
 sta $03d8,x
+lda objectschar4
 sta $03d9,x
 lda charactercolour
 sta $d800,x
@@ -568,10 +591,13 @@ sta $d7d9,x
 rts
 displayobjectstwo
 
-lda objectschar
+lda objectschar1
 sta $0500,x
+lda objectschar2
 sta $0501,x
+lda objectschar3
 sta $04d8,x
+lda objectschar4
 sta $04d9,x
 lda charactercolour
 sta $d900,x
@@ -582,10 +608,13 @@ sta $d8d9,x
 rts
 displayobjectsthree
  
-lda objectschar
+lda objectschar1
 sta $0600,x
+lda objectschar2
 sta $0601,x
+lda objectschar3
 sta $05d8,x
+lda objectschar4
 sta $05d9,x
 lda charactercolour
 sta $da00,x
@@ -599,10 +628,13 @@ rts
 displayobjectsfour
  
 
-lda objectschar
+lda objectschar1
 sta $0700,x
+lda objectschar2
 sta $0701,x
+lda objectschar3
 sta $06d8,x
+lda objectschar4
 sta $06d9,x
 lda charactercolour
 sta $db00,x
@@ -610,27 +642,137 @@ sta $db01,x
 sta $dad8,x
 sta $dad9,x
 rts
+decreasebulleth
+lda bulletpositionh
+sbc #$1
+ sta bulletpositionh
+ 
+cmp #$0
+ 
+beq resetbullethigh
+ sta bulletpositionh
+ 
 
  
+rts
+resetbullethigh
+lda positionh
+ 
+sta bulletpositionh
+ 
+ rts
+bulletmove
+
+ 
+rts
+displaybullet
+ 
+
+ 
+
+ 
+ 
+ 
+ 
+ldx bulletpositionl
+txa
+sbc #40
+tax
+bcc decreasebulleth
+stx bulletpositionl
+ sbc #40
+tax
+bcc decreasebulleth
+lda bulletpositionh
+cmp #$01
+beq displaybulletpg1
+cmp #$02
+beq displaybulletpg2
+cmp #$03
+beq displaybulletpg3 
+cmp #$04
+beq displaybulletpg4
+jmp mainloop
+rts
+
+displaybulletpg1
+ 
+lda bulletchar
+sta $0400,x
+ sta $0401,x
+lda #3
+sta $d800,x
+ sta $d801,x
+ jsr bulletmove
+rts
+displaybulletpg2
+ 
+lda bulletchar
+sta $0500,x
+sta $0501,x
+lda #3
+sta $d900,x
+sta $d901,x
+ jsr bulletmove
+rts
+displaybulletpg3
+ 
+lda bulletchar
+sta $0600,x
+ sta $0601,x
+lda #3
+sta $da00,x
+ sta $da01,x
+jsr bulletmove
+ rts
+
+
+displaybulletpg4
+ 
+
+lda bulletchar
+sta $0700,x
+ 
+ sta $0701,x
+lda #3
+sta $db00,x
+ sta $db01,x
+jsr bulletmove
+ rts
 
 collision
   
  
  
-lda positionl
+lda bulletpositionl
      
 cmp objectspositionl
  
 
  
 beq addscore
+adc #1
+cmp objectspositionl
  
+
  
+beq addscore
+sbc #1
+cmp objectspositionl
+ 
+
+ 
+beq addscore
+lda positionl
+     
+cmp objectspositionl
+ beq zeroscore
 rts 
  
 zeroscore
 lda #0
 sta scoreones
+sta scoretens
 rts
 addscore		clc
 				 
@@ -644,8 +786,7 @@ addscore		clc
                  sta objectspositionl
                jsr objecthighreset
               
- 
-               inc objectschar
+  
 				
 				lda scoreones
 				sec
