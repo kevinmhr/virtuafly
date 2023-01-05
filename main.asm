@@ -19,7 +19,7 @@ character =$4006
 character1 =$4007
 character2 =$4008
 character3 =$4009
- 
+fourty = $6387
 bgchar =$022
 bgcolor =$024
 charactertemporary = $026
@@ -70,6 +70,8 @@ sta $d018
  sta objectspositionh
  lda #02
  sta objectspositionl
+  lda #$04
+ sta bulletpositionh
 lda #76
 sta bgchar 
 lda #2
@@ -82,7 +84,7 @@ lda #74
 sta objectschar3
 lda #75
 sta objectschar4
-lda #81
+lda #34
 sta bulletchar
 lda $01    
 and #251    
@@ -162,16 +164,18 @@ jsr scanjoy
 jsr movejoy
 
  
- 
 
 
-   
+
+
 inc charactercolour
  
  
 jsr displayobjects
 jsr display
- jsr collision
+  jsr displaybullet
+
+ 
 jsr printscore
  
 jsr mainloop
@@ -194,18 +198,18 @@ charanim
  
   rts
   
-        
-
+ 
 
 scanjoy            
      
            lda $dc00
           
             sta lastkey
-            cmp #$7f
+            cmp #$6f
             beq setdirection
         
-      
+            cmp #$7f
+            beq storekey
                
            sta lastkey
            inc $2260 
@@ -221,34 +225,26 @@ scanjoy
     inc $2267
            rts
            
-bullethreset
-lda positionh
- 
-sta bulletpositionh
-
-rts
-           
-readyforshoot
-
  
  
-
- jsr lazbeep2
- jsr displaybullet
- 
- jsr joylock
-rts     
 setdirection	
- ldx positionl
- 
-stx bulletpositionl
- sta lastkey
-lda #$04
+ lda positionl
+sta bulletpositionl
+
+ lda positionh
 sta bulletpositionh
-jsr cls
-jsr joylock
-    
- rts
+
+jsr displaybullet
+jsr collision
+lda #$7f
+sta lastkey
+storekey 
+
+ sta lastkey
+ 
+ 
+ rts      
+
 joylock  
  
   lda lastkey
@@ -262,10 +258,11 @@ counttounlock
 inx
  
 afewer
- lda $0400,x
+  
+  lda $0400,x
 lda $0400,x
- 
- 
+  lda $0400,x
+lda $0400,x
  cpx #$ff
  bne joylock
  
@@ -303,12 +300,25 @@ sta $daf0,y
 clsdone
 rts
 
+readyforshoot
+
+ 
+ 
+
+ jsr lazbeep2
+
+ 
+ 
+ jsr displaybullet
+ 
+
+ 
+rts     
 
 movejoy 
                 
                 lda lastkey
-                cmp #$6f
-                beq readyforshoot
+              
                 cmp #$7b   
 				beq left ;
 				cmp #$7e   
@@ -326,15 +336,18 @@ movejoy
 
 
 left 
- jsr bullethreset
+  
+ 
+
   jsr tickingsound
    
     lda positionl
     sec
     sbc #01
     sta positionl
+   
   bcc counterrecount
- jsr collision
+ 
  jsr joylock
     
      jsr display
@@ -344,17 +357,19 @@ counterrecount
 jsr decreasehibyte
 lda #255
 sta positionl
+ 
 rts
 right 
  
- jsr bullethreset
+ 
 jsr tickingsound
  lda positionl
     clc
     adc #01
     sta positionl
+  
   bcs recount
- jsr collision
+ 
  jsr joylock
   
     jsr display
@@ -364,19 +379,22 @@ recount
 jsr incresehighbyte
 lda #0
 sta positionl
+ 
 rts
 
 down
- jsr bullethreset
+ 
   jsr tickingsound
    
    lda positionl
+ 
     clc
     adc #40
     sta positionl
     
+    
     bcs incresehighbyte
- jsr collision
+ 
  jsr joylock
  
  jsr display
@@ -385,17 +403,18 @@ down
     rts
 up
  
- jsr bullethreset
+ 
 jsr tickingsound
   lda positionl
     sec
     sbc #40
     sta positionl
+ 
    
  
  bcc decreasehibyte
- jsr collision
- jsr joylock
+ 
+  jsr joylock
   
   jsr display
  
@@ -433,6 +452,7 @@ increaselowbyte
  lda positionl
 adc #23
  sta positionl
+ 
 
 
 rts
@@ -446,6 +466,7 @@ decreaselowbyte
 lda positionl
 sbc #24
 sta positionl
+ 
 rts
 display 
 
@@ -561,7 +582,13 @@ displayobjects
  
  jsr lazbeep3 
  
-  
+ ldx objectspositionl
+ 
+txa
+sbc #40
+  tax
+ 
+ stx objectspositionl
 
 
 
@@ -649,113 +676,115 @@ sta $dad8,x
 sta $dad9,x
 rts
  
- 
 reloadposition
 
-ldx positionl
-stx bulletpositionl
-jmp mainloop
+lda positionh
+sta bulletpositionh
+ 
+rts
+
+decrbulletpositionh
+
+
+
+
+dec bulletpositionh
+lda bulletpositionh
+
+cmp #$0
+sta bulletpositionh
+ beq reloadposition
+ sta bulletpositionh
+ 
 rts
 displaybullet
  
 
- 
 
- 
-sec
- 
- 
 ldx bulletpositionl
+sec
 txa
 sbc #40
-tax
-
+  tax
+bcc decrbulletpositionh
+ stx bulletpositionl
+ 
+  
+ 
 
  
   
-stx bulletpositionl
-lda bulletpositionl
-cmp #$0
 
-beq reloadposition
- 
-
-
- 
-  
-stx bulletpositionl
- 
+ ldx bulletpositionl
 lda bulletpositionh
- 
-
-
-
-cmp #$04
-beq displaybulletpg4
-cmp #$03
-beq displaybulletpg3 
-cmp #$02
-beq displaybulletpg2
 cmp #$01
 beq displaybulletpg1
+cmp #$02
+beq displaybulletpg2
+cmp #$03
+beq displaybulletpg3 
+cmp #$04
+beq displaybulletpg4
+
  
-jsr joylock
-jsr mainloop
-rts
+
+ 
+ 
 returntomain
-jsr mainloop
+ 
 rts
 displaybulletpg1
-  
+
 lda bulletchar
 sta $0400,x
  sta $0401,x
-lda #3
+lda #6
 sta $d800,x
  sta $d801,x
-  inc bulletpositionh
-   inc bulletpositionh
+ 
 rts
 displaybulletpg2
-
+ 
 lda bulletchar
 sta $0500,x
 sta $0501,x
-lda #3
+lda #6
 sta $d900,x
 sta $d901,x
-  dec bulletpositionh
+ 
 rts
 displaybulletpg3
+ 
+ 
  
 lda bulletchar
 
 sta $0600,x
  sta $0601,x
-lda #3
+lda #6
 sta $da00,x
  sta $da01,x
-  dec bulletpositionh
+  
  rts
 
 
 displaybulletpg4
-
+ldx bulletpositionl
 
 lda bulletchar
 sta $0700,x
  
  sta $0701,x
-lda #3
+lda #6
 sta $db00,x
  sta $db01,x
- dec bulletpositionh
+ 
  rts
 
 collision
   
  
- 
+
 lda bulletpositionl
      
 cmp objectspositionl
@@ -763,19 +792,23 @@ cmp objectspositionl
 
  
 beq addscore
+lda bulletpositionl
 adc #1
 cmp objectspositionl
  
 
  
 beq addscore
+lda bulletpositionl
 sbc #1
 cmp objectspositionl
- 
+beq addscore
+
 
  
-beq addscore
+ 
 lda positionl
+adc #40
      
 cmp objectspositionl
  beq zeroscore
