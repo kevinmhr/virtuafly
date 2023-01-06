@@ -1,6 +1,8 @@
 !cpu 6510
-!to "game.prg",cbm
-
+!to "virtuafly.prg",cbm
+;designed by keyvan mehrbakhsh 2023
+;keyvanmehrbakhsh@gmail.com
+;its free to alter 
  
 lastkey=$21
 position = $20
@@ -151,7 +153,7 @@ mainloop
  
 jsr cls
  
-jsr resetobjecthighbyte
+ 
  
   ; jsr charanim
 
@@ -171,11 +173,14 @@ jsr movejoy
 inc charactercolour
  
  
-jsr displayobjects
-jsr display
-  jsr displaybullet
+ jsr displaybullet
+jsr collision
+ jsr displayobjects
+ jsr display
+  
+  
 
- 
+
 jsr printscore
  
 jsr mainloop
@@ -201,13 +206,13 @@ charanim
  
 
 scanjoy            
-     
+          
            lda $dc00
           
             sta lastkey
-            cmp #$6f
-            beq setdirection
-        
+           
+         cmp #$6f
+               beq fire
             cmp #$7f
             beq storekey
                
@@ -224,25 +229,37 @@ scanjoy
   inc $2266
     inc $2267
            rts
-           
- 
- 
-setdirection	
+fire	
+  
+  jsr lazbeep1 
  lda positionl
 sta bulletpositionl
 
  lda positionh
 sta bulletpositionh
-
+ lda objectspositionl
+ 
+ 
+ sbc #40
+  
+ 
+ sta objectspositionl
+ 
+ sta objectspositionl
 jsr displaybullet
-jsr collision
+
 lda #$7f
 sta lastkey
-storekey 
+ 
 
+rts
+
+storekey 
+ 
  sta lastkey
  
- 
+
+
  rts      
 
 joylock  
@@ -258,12 +275,23 @@ counttounlock
 inx
  
 afewer
+  lda $0400,x
+ lda $0400,x
+  lda $0400,x
+ lda $0400,x
+  lda $0400,x
+ lda $0400,x
+  lda $0400,x
+ lda $0400,x
+  lda $0400,x
+ lda $0400,x
+  lda $0400,x
+ lda $0400,x
   
   lda $0400,x
-lda $0400,x
-  lda $0400,x
-lda $0400,x
- cpx #$ff
+ lda $0400,x
+ 
+ cpx #$00
  bne joylock
  
 
@@ -273,8 +301,12 @@ lda $0400,x
 
 cls
  
-lda bgchar 
+
  iny
+ tya 
+ adc #40
+ tay
+ lda bgchar 
 sta $0400,y  
 sta $0500,y  
 sta $0600,y  
@@ -289,7 +321,9 @@ clscol
 ;lda #6
  
 lda bgcolor
-  
+ iny
+ iny
+ 
 sta $d800,y  
 sta $d900,y  
 sta $da00,y 
@@ -330,8 +364,6 @@ movejoy
                
 				rts
 				
-
-
 
 
 
@@ -566,7 +598,7 @@ rts
  
  
 resetobjecthighbyte 
-
+inc objectspositionh
 lda objectspositionh
 cmp #04 
 beq objecthighreset
@@ -580,17 +612,13 @@ rts
 
 displayobjects 
  
- jsr lazbeep3 
- 
- ldx objectspositionl
- 
-txa
-sbc #40
-  tax
- 
- stx objectspositionl
 
 
+ 
+ 
+ 
+  
+ 
 
 lda objectspositionh
 ldx objectspositionl
@@ -689,12 +717,8 @@ decrbulletpositionh
 
 
 dec bulletpositionh
-lda bulletpositionh
-
-cmp #$0
-sta bulletpositionh
- beq reloadposition
- sta bulletpositionh
+ 
+ 
  
 rts
 displaybullet
@@ -706,7 +730,8 @@ sec
 txa
 sbc #40
   tax
-bcc decrbulletpositionh
+stx bulletpositionl
+  bcc decrbulletpositionh
  stx bulletpositionl
  
   
@@ -738,7 +763,7 @@ displaybulletpg1
 lda bulletchar
 sta $0400,x
  sta $0401,x
-lda #6
+lda #4
 sta $d800,x
  sta $d801,x
  
@@ -748,7 +773,7 @@ displaybulletpg2
 lda bulletchar
 sta $0500,x
 sta $0501,x
-lda #6
+lda #4
 sta $d900,x
 sta $d901,x
  
@@ -761,7 +786,7 @@ lda bulletchar
 
 sta $0600,x
  sta $0601,x
-lda #6
+lda #4
 sta $da00,x
  sta $da01,x
   
@@ -775,7 +800,7 @@ lda bulletchar
 sta $0700,x
  
  sta $0701,x
-lda #6
+lda #4
 sta $db00,x
  sta $db01,x
  
@@ -792,31 +817,36 @@ cmp objectspositionl
 
  
 beq addscore
-lda bulletpositionl
-adc #1
-cmp objectspositionl
- 
-
- 
-beq addscore
-lda bulletpositionl
-sbc #1
-cmp objectspositionl
-beq addscore
-
-
  
  
-lda positionl
-adc #40
+   
+ 
+ lda bulletpositionl
      
-cmp objectspositionl
- beq zeroscore
+cmp objectspositionl+1
+ 
+
+ 
+beq zeroscore
+ 
+ lda bulletpositionl
+adc #1
+cmp objectspositionl 
+ 
+
+ 
+beq zeroscore
+ 
+ 
+ 
+ 
+
 rts 
  
 zeroscore
-lda #0
+lda #0 
 sta scoreones
+lda #0
 sta scoretens
 rts
 addscore		clc
@@ -826,10 +856,10 @@ addscore		clc
 				jsr expnoz
 			 
                 lda objectspositionl
-                adc #122
+                adc #23 
               
                  sta objectspositionl
-               jsr objecthighreset
+               
               
   
 				
@@ -908,19 +938,19 @@ charboxscr
          !byte 1,2,3,4,41,42,43,44,81,82,83,84,121,122,123,124
 
 circle1
- !byte %0011100
+ !byte %1000000
 circle2 
- !byte %0100010
+ !byte %0100000
 circle3 
- !byte %1000001
+ !byte %0010000
 circle4 
- !byte %1000001
+ !byte %0001000
 circle5 
- !byte %1000001
+ !byte %1000100
 circle6 
  !byte %0100010
 circle7 
- !byte %0011100
+ !byte %0010001
 circle8 
  !byte %0000000
  
