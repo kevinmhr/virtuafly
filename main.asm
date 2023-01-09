@@ -147,8 +147,6 @@ sta $2266
 sta $2267         
    jsr cls      
 mainloop
- 
-
 
  
 jsr cls
@@ -162,7 +160,37 @@ jsr cls
 ; inc bgcolor
  
 jsr scanjoy
+ iny
+iny
+iny
+ tya 
+ adc #40
+ tay
+ lda bgchar 
+sta $0400,y  
+sta $0500,y  
+sta $0600,y  
+sta $06f0,y
  
+ 
+ 
+ 
+ 
+;rts
+clscol
+;lda #6
+ 
+lda bgcolor
+ iny
+ iny
+ 
+sta $d800,y  
+sta $d900,y  
+sta $da00,y 
+sta $daf0,y 
+ 
+ 
+
 jsr movejoy
 
  
@@ -302,33 +330,6 @@ afewer
 cls
  
 
- iny
- tya 
- adc #40
- tay
- lda bgchar 
-sta $0400,y  
-sta $0500,y  
-sta $0600,y  
-sta $06f0,y
- 
- 
- 
- 
- 
-;rts
-clscol
-;lda #6
- 
-lda bgcolor
- iny
- iny
- 
-sta $d800,y  
-sta $d900,y  
-sta $da00,y 
-sta $daf0,y 
- 
  
  
 clsdone
