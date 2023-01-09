@@ -821,21 +821,6 @@ beq addscore
  
    
  
- lda bulletpositionl
-     
-cmp objectspositionl+1
- 
-
- 
-beq zeroscore
- 
- lda bulletpositionl
-adc #1
-cmp objectspositionl 
- 
-
- 
-beq zeroscore
  
  
  
@@ -864,6 +849,7 @@ addscore		clc
   
 				
 				lda scoreones
+			 
 				sec
 				sbc #10
 			 
