@@ -40,6 +40,7 @@ scoretens =$40fe
 sheet = $31
 scorehunds = $40fd
 scorethous = $40fa 
+bulletcolor = $4055
 *=$0801
         !byte    $1E, $08, $0A, $00, $9E, $20, $28,  $32, $30, $38, $30, $29, $3a, $8f, $20, $28, $43, $29, $20, $32, $30, $32, $31, $20, $4D, $54, $53, $56, $00, $00, $00
  
@@ -147,25 +148,155 @@ sta $2266
 sta $2267         
    jsr cls      
 mainloop
+ 
+  jsr wastetime
+ jsr cls
+ 
+aftercls
+ 
 
- 
-jsr cls
- 
- 
- 
-  ; jsr charanim
 
+afterwaste
  
- 
+
 ; inc bgcolor
  
 jsr scanjoy
- iny
+ 
+ 
+ 
+
+jsr movejoy
+
+jsr wastetime
+
+inc charactercolour
+ 
+ 
+ jsr displaybullet
+ 
+jsr collision
+ jsr displayobjects
+ 
+ 
+ 
+   jsr cls2
+ jsr cls3
+
+ 
+ 
+
+  
+
+
+
+jsr printscore
+jsr display
+ jsr wastetime
+cpx #$ff
+beq mainloop
+jmp mainloop
+rts
+wastetime
+  inx 
+ lda $400,x
+ cpx #$ff
+ bne wastetime
+ 
+ 
+rts
+
+charanim
+ 
+ror $2260 
+ 
+         ror $2261
+ ror $2262
+ 
+  ror $2263 
+ 
+  ror $2264
+ ror $2265
+  ror $2266
+    ror $2267
+ 
+ 
+  rts
+  
+cls
+ 
 iny
-iny
+  
+ 
+ 
+ 
  tya 
  adc #40
  tay
+ lda bgchar 
+sta $0400,y  
+sta $0500,y  
+sta $0600,y  
+sta $06f0,y
+ 
+ 
+lda bgcolor
+ 
+ 
+sta $d800,y  
+sta $d900,y  
+sta $da00,y 
+sta $daf0,y 
+ 
+ 
+ 
+
+ rts
+cls3
+ 
+ 
+ 
+ iny
+ lda bgchar 
+sta $0400,y  
+sta $0500,y  
+sta $0600,y  
+sta $06f0,y
+ 
+ 
+lda bgcolor
+ 
+ 
+sta $d800,y  
+sta $d900,y  
+sta $da00,y 
+sta $daf0,y 
+ 
+  
+ iny
+ lda bgchar 
+sta $0400,y  
+sta $0500,y  
+sta $0600,y  
+sta $06f0,y
+ 
+ 
+lda bgcolor
+ 
+ 
+sta $d800,y  
+sta $d900,y  
+sta $da00,y 
+sta $daf0,y 
+ 
+ 
+ 
+ 
+
+ rts
+cls2
+ 
+ iny
  lda bgchar 
 sta $0400,y  
 sta $0500,y  
@@ -180,58 +311,17 @@ sta $06f0,y
 clscol
 ;lda #6
  
-lda bgcolor
- iny
- iny
+lda #0
+ 
  
 sta $d800,y  
-sta $d900,y  
+sta $d900,y 
 sta $da00,y 
 sta $daf0,y 
  
  
 
-jsr movejoy
-
- 
-
-
-
-
-inc charactercolour
- 
- 
- jsr displaybullet
-jsr collision
- jsr displayobjects
- jsr display
-  
-  
-
-
-jsr printscore
- 
-jsr mainloop
-rts
- 
-charanim
-
- inc $2260 
- 
-         inc $2261
- inc $2262
- 
-  inc $2263 
- 
-  inc $2264
-  inc $2265
-  inc $2266
-    inc $2267
- 
- 
-  rts
-  
- 
+ rts
 
 scanjoy            
           
@@ -245,20 +335,10 @@ scanjoy
             beq storekey
                
            sta lastkey
-           inc $2260 
  
-         inc $2261
- inc $2262
- 
-  inc $2263 
- 
-  inc $2264
-  inc $2265
-  inc $2266
-    inc $2267
            rts
 fire	
-  
+  inc bulletcolor
   jsr lazbeep1 
  lda positionl
 sta bulletpositionl
@@ -286,53 +366,8 @@ storekey
  
  sta lastkey
  
-
-
- rts      
-
-joylock  
- 
-  lda lastkey
-  cmp $dc00
-  beq counttounlock
- 
-counttounlock
- 
-
-  
-inx
- 
-afewer
-  lda $0400,x
- lda $0400,x
-  lda $0400,x
- lda $0400,x
-  lda $0400,x
- lda $0400,x
-  lda $0400,x
- lda $0400,x
-  lda $0400,x
- lda $0400,x
-  lda $0400,x
- lda $0400,x
-  
-  lda $0400,x
- lda $0400,x
- 
- cpx #$00
- bne joylock
- 
-
- rts
-
-
-
-cls
- 
-
  
  
-clsdone
 rts
 
 readyforshoot
@@ -381,7 +416,7 @@ left
    
   bcc counterrecount
  
- jsr joylock
+ 
     
      jsr display
      
@@ -402,9 +437,7 @@ jsr tickingsound
     sta positionl
   
   bcs recount
- 
- jsr joylock
-  
+    
     jsr display
    
     rts
@@ -428,7 +461,7 @@ down
     
     bcs incresehighbyte
  
- jsr joylock
+ 
  
  jsr display
  
@@ -446,9 +479,7 @@ jsr tickingsound
    
  
  bcc decreasehibyte
- 
-  jsr joylock
-  
+    
   jsr display
  
 rts
@@ -503,6 +534,7 @@ sta positionl
 rts
 display 
 
+ 
  
 lda positionh
 ldx positionl
@@ -764,7 +796,7 @@ displaybulletpg1
 lda bulletchar
 sta $0400,x
  sta $0401,x
-lda #4
+lda bulletcolor
 sta $d800,x
  sta $d801,x
  
@@ -774,7 +806,7 @@ displaybulletpg2
 lda bulletchar
 sta $0500,x
 sta $0501,x
-lda #4
+lda bulletcolor
 sta $d900,x
 sta $d901,x
  
@@ -787,7 +819,7 @@ lda bulletchar
 
 sta $0600,x
  sta $0601,x
-lda #4
+lda bulletcolor
 sta $da00,x
  sta $da01,x
   
@@ -801,7 +833,7 @@ lda bulletchar
 sta $0700,x
  
  sta $0701,x
-lda #4
+lda bulletcolor
 sta $db00,x
  sta $db01,x
  
@@ -847,7 +879,7 @@ addscore		clc
                  sta objectspositionl
                
               
-  
+                jsr charanim
 				
 				lda scoreones
 			 
@@ -856,7 +888,7 @@ addscore		clc
 			 
 				cmp #$ 
 				beq addtens
-			     jsr joylock
+			 
 				jsr mainloop
 				rts
 
@@ -925,19 +957,19 @@ charboxscr
          !byte 1,2,3,4,41,42,43,44,81,82,83,84,121,122,123,124
 
 circle1
- !byte %1000000
+ !byte %0000000
 circle2 
- !byte %0100000
+ !byte %0000000
 circle3 
- !byte %0010000
+ !byte %0000000
 circle4 
  !byte %0001000
 circle5 
- !byte %1000100
+ !byte %0000000
 circle6 
- !byte %0100010
+ !byte %0000000
 circle7 
- !byte %0010001
+ !byte %0000000
 circle8 
  !byte %0000000
  

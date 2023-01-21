@@ -87,16 +87,16 @@ tickingsound
          
 lazbeep1
          jsr soundend1
-         lda #%00001011 ; 0 9
+         lda #%00000100 ; 0 9
          sta attdec
-         lda #%00000000 ; 0 0
+         lda #%00010000 ; 0 0
          sta susrel
          lda #15        ; 15
          sta volume
       
-         lda appleblock  
+         lda objectspositionh; 12
          sta hifreq
-         lda appleblock       ; 8
+         lda objectspositionh 
          sta lofreq
          lda #%00010100       ; 32 saw
          sta wavefm
