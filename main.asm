@@ -37,7 +37,7 @@ bulletpositionh = $6848
 bulletpositionl = $6248
 scoreones =$40ff
 scoretens =$40fe
-sheet = $31
+voicefreq = $31
 scorehunds = $40fd
 scorethous = $40fa 
 bulletcolor = $4055
@@ -87,7 +87,7 @@ lda #74
 sta objectschar3
 lda #75
 sta objectschar4
-lda #34
+lda #33
 sta bulletchar
 lda $01    
 and #251    
@@ -146,7 +146,8 @@ lda circle7
 sta $2266 
  lda circle8 
 sta $2267         
-   jsr cls      
+   jsr cls  
+ 
 mainloop
  
   jsr wastetime
@@ -158,12 +159,14 @@ aftercls
 
 afterwaste
  
-
-; inc bgcolor
+ inc objectschar1
+  inc objectschar2
+   inc objectschar3
+    inc objectschar4
  
 jsr scanjoy
  
- 
+ inc voicefreq
  
 
 jsr movejoy
@@ -176,7 +179,7 @@ inc charactercolour
  jsr displaybullet
  
 jsr collision
- jsr displayobjects
+
  
  
  
@@ -200,6 +203,11 @@ rts
 wastetime
   inx 
  lda $400,x
+  lda $400,x
+   lda $400,x
+    lda $400,x
+     lda $400,x
+   
  cpx #$ff
  bne wastetime
  
@@ -345,15 +353,13 @@ sta bulletpositionl
 
  lda positionh
 sta bulletpositionh
- lda objectspositionl
  
  
- sbc #40
+ 
+ 
   
  
- sta objectspositionl
  
- sta objectspositionl
 jsr displaybullet
 
 lda #$7f
@@ -366,7 +372,7 @@ storekey
  
  sta lastkey
  
- 
+    jsr displayobjects
  
 rts
 
@@ -642,34 +648,39 @@ lda #0
 sta objectspositionh
 inc objectspositionh
 rts
-
+ 
+ 
+ 
 displayobjects 
  
 
-
  
- 
- 
-  
  
 
+
+ldx objectspositionl 
+
+ 
 lda objectspositionh
-ldx objectspositionl
-cmp #$01
-beq displayobjectsone
-cmp #$02
-beq displayobjectstwo
-cmp #$03
-beq displayobjectsthree
-cmp #$04
-beq displayobjectsfour
+ 
+jsr displayobjectsone
+ 
+ 
+jsr displayobjectstwo
+ 
+jsr displayobjectsthree
+ 
+ 
+ 
 
 rts
 
 displayobjectsone
 
 lda objectschar1
+
 sta $0400,x
+
 lda objectschar2
 sta $0401,x
 lda objectschar3
@@ -874,10 +885,9 @@ addscore		clc
 				jsr expnoz
 			 
                 lda objectspositionl
-                adc #23 
+                 adc #23 
               
                  sta objectspositionl
-               
               
                 jsr charanim
 				
@@ -888,7 +898,8 @@ addscore		clc
 			 
 				cmp #$ 
 				beq addtens
-			 
+			    
+               
 				jsr mainloop
 				rts
 
@@ -953,8 +964,8 @@ printscore
 				sta $d865	
 				rts
  
-charboxscr
-         !byte 1,2,3,4,41,42,43,44,81,82,83,84,121,122,123,124
+somenum
+         !byte  1,5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,90,95,100,105,110,115,120,125,130,135,140,145,150,155,160,165,170,175,180,185,190,195,200,205,210,215,220,225,230,235,240,245,250,255
 
 circle1
  !byte %0000000

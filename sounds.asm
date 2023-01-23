@@ -94,9 +94,9 @@ lazbeep1
          lda #15        ; 15
          sta volume
       
-         lda objectspositionh; 12
+         lda voicefreq; 12
          sta hifreq
-         lda objectspositionh 
+          lda voicefreq
          sta lofreq
          lda #%00010100       ; 32 saw
          sta wavefm
