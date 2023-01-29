@@ -40,7 +40,9 @@ scoretens =$40fe
 voicefreq = $31
 scorehunds = $40fd
 scorethous = $40fa 
-bulletcolor = $4055
+bulletcolor = $2055
+objecbuffer = $6a00
+clscount = $4a00
 *=$0801
         !byte    $1E, $08, $0A, $00, $9E, $20, $28,  $32, $30, $38, $30, $29, $3a, $8f, $20, $28, $43, $29, $20, $32, $30, $32, $31, $20, $4D, $54, $53, $56, $00, $00, $00
  
@@ -146,18 +148,37 @@ lda circle7
 sta $2266 
  lda circle8 
 sta $2267         
-   jsr cls  
  
+
+ldx #0
+clear6a00
+inx
+lda #0
+sta $6a00
+cpx #$ff
+bne clear6a00
+   
+loadenemies  
+inx
+lda somenum,x
+ sta objecbuffer,x
+ cpx #$ff
+ bne loadenemies
+
 mainloop
- 
-  jsr wastetime
+   jsr charanim
+ ldy #0
  jsr cls
+objectsdisplayed
+lda clscount
+ eor clscount
+ sta clscount
+   ror clscount
+
  
-aftercls
  
 
 
-afterwaste
  
  inc objectschar1
   inc objectschar2
@@ -171,52 +192,51 @@ jsr scanjoy
 
 jsr movejoy
 
-jsr wastetime
+ 
 
 inc charactercolour
  
- 
+
  jsr displaybullet
  
-jsr collision
+ 
+
 
  
  
  
-   jsr cls2
- jsr cls3
 
  
- 
-
   
 
 
 
 jsr printscore
+
+ jsr displayobjects 
 jsr display
- jsr wastetime
-cpx #$ff
-beq mainloop
+ 
+
+ 
 jmp mainloop
 rts
 wastetime
   inx 
- lda $400,x
-  lda $400,x
-   lda $400,x
-    lda $400,x
-     lda $400,x
-   
- cpx #$ff
+ 
+ 
+ cpx    #0
  bne wastetime
  
  
 rts
 
+
+
+
 charanim
  
-ror $2260 
+ 
+ ror $2260 
  
          ror $2261
  ror $2262
@@ -228,19 +248,16 @@ ror $2260
   ror $2266
     ror $2267
  
- 
   rts
   
 cls
  
 iny
-  
  
  
  
- tya 
- adc #40
- tay
+ 
+ 
  lda bgchar 
 sta $0400,y  
 sta $0500,y  
@@ -257,7 +274,8 @@ sta $da00,y
 sta $daf0,y 
  
  
- 
+ cpy #0
+ bne cls
 
  rts
 cls3
@@ -305,6 +323,9 @@ sta $daf0,y
 cls2
  
  iny
+ tya 
+ adc #40
+ tay
  lda bgchar 
 sta $0400,y  
 sta $0500,y  
@@ -319,7 +340,7 @@ sta $06f0,y
 clscol
 ;lda #6
  
-lda #0
+lda bgcolor
  
  
 sta $d800,y  
@@ -346,19 +367,17 @@ scanjoy
  
            rts
 fire	
+   jsr collision
+    jsr collision
   inc bulletcolor
   jsr lazbeep1 
- lda positionl
-sta bulletpositionl
+ 
+ 
 
- lda positionh
-sta bulletpositionh
  
- 
- 
- 
+notascore
   
- 
+ jsr wastetime
  
 jsr displaybullet
 
@@ -371,8 +390,12 @@ rts
 storekey 
  
  sta lastkey
- 
-    jsr displayobjects
+  lda positionl
+sta bulletpositionl
+
+ lda positionh
+sta bulletpositionh
+    
  
 rts
 
@@ -539,9 +562,9 @@ sta positionl
  
 rts
 display 
+ 
 
- 
- 
+
 lda positionh
 ldx positionl
 cmp #$01
@@ -552,7 +575,7 @@ cmp #$03
 beq displaypagethree  
 cmp #$04
 beq displaypagefour  
-    
+
     
 rts 
 displaypageone
@@ -651,49 +674,166 @@ rts
  
  
  
+
+ 
+reloadposition
+
+lda positionh
+sta bulletpositionh
+ 
+rts
+
+decrbulletpositionh
+
+
+
+
+dec bulletpositionh
+ 
+ 
+ 
+rts
+displaybullet
+ 
+
+
+ldx bulletpositionl
+sec
+txa
+sbc #40
+  tax
+stx bulletpositionl
+  bcc decrbulletpositionh
+ stx bulletpositionl
+ 
+ 
+  
+
+ ldx bulletpositionl
+   
+lda bulletpositionh
+cmp #$01
+beq displaybulletpg1
+cmp #$02
+beq displaybulletpg2
+cmp #$03
+beq displaybulletpg3 
+cmp #$04
+beq displaybulletpg4
+
+ 
+
+ 
+ 
+returntomain
+ 
+rts
+collision
+inx
+lda bulletpositionl
+cmp #$0
+beq jumptonotascore
+cmp objecbuffer,x
+beq score
+cpx #$ff
+bne collision
+rts
+score
+lda #0
+sta objecbuffer,x
+
+jsr addscore
+
+rts 
+jumptonotascore
+jsr notascore
+rts
+displaybulletpg1
+
+lda bulletchar
+sta $0400,x
+ sta $0401,x
+lda bulletcolor
+sta $d800,x
+ sta $d801,x
+ 
+
+
+rts
+displaybulletpg2
+ 
+lda bulletchar
+sta $0500,x
+sta $0501,x
+lda bulletcolor
+sta $d900,x
+sta $d901,x
+ 
+rts
+displaybulletpg3
+ 
+ 
+ 
+lda bulletchar
+
+sta $0600,x
+ sta $0601,x
+lda bulletcolor
+sta $da00,x
+ sta $da01,x
+  
+ rts
+
+
+displaybulletpg4
+ldx bulletpositionl
+
+lda bulletchar
+sta $0700,x
+ 
+ sta $0701,x
+lda bulletcolor
+sta $db00,x
+ sta $db01,x
+ 
+ rts
+
+ 
 displayobjects 
  
+ 
+iny 
+ 
+ldx objecbuffer,y 
 
  
- 
-
-
-ldx objectspositionl 
-
- 
-lda objectspositionh
- 
-jsr displayobjectsone
- 
- 
-jsr displayobjectstwo
- 
-jsr displayobjectsthree
- 
- 
- 
-
-rts
-
-displayobjectsone
-
 lda objectschar1
 
-sta $0400,x
-
+lda objectschar1
+sta $0500,x
 lda objectschar2
-sta $0401,x
+sta $0501,x
 lda objectschar3
-sta $03d8,x
+sta $04d8,x
 lda objectschar4
-sta $03d9,x
+sta $04d9,x
 lda charactercolour
-sta $d800,x
-sta $d801,x
-sta $d7d8,x
-sta $d7d9,x
+sta $d900,x
+sta $d901,x
+sta $d8d8,x
+sta $d8d9,x
  
+ cpy #$20
+ 
+ 
+ bne displayobjects
+ 
+
 rts
+backtoloop
+jsr objectsdisplayed
+rts
+ 
 displayobjectstwo
 
 lda objectschar1
@@ -748,129 +888,13 @@ sta $dad8,x
 sta $dad9,x
 rts
  
-reloadposition
 
-lda positionh
-sta bulletpositionh
- 
-rts
-
-decrbulletpositionh
-
-
-
-
-dec bulletpositionh
- 
- 
- 
-rts
-displaybullet
- 
-
-
-ldx bulletpositionl
-sec
-txa
-sbc #40
-  tax
-stx bulletpositionl
-  bcc decrbulletpositionh
- stx bulletpositionl
- 
-  
- 
-
- 
-  
-
- ldx bulletpositionl
-lda bulletpositionh
-cmp #$01
-beq displaybulletpg1
-cmp #$02
-beq displaybulletpg2
-cmp #$03
-beq displaybulletpg3 
-cmp #$04
-beq displaybulletpg4
-
- 
-
- 
- 
-returntomain
- 
-rts
-displaybulletpg1
-
-lda bulletchar
-sta $0400,x
- sta $0401,x
-lda bulletcolor
-sta $d800,x
- sta $d801,x
- 
-rts
-displaybulletpg2
- 
-lda bulletchar
-sta $0500,x
-sta $0501,x
-lda bulletcolor
-sta $d900,x
-sta $d901,x
- 
-rts
-displaybulletpg3
- 
- 
- 
-lda bulletchar
-
-sta $0600,x
- sta $0601,x
-lda bulletcolor
-sta $da00,x
- sta $da01,x
-  
- rts
-
-
-displaybulletpg4
-ldx bulletpositionl
-
-lda bulletchar
-sta $0700,x
- 
- sta $0701,x
-lda bulletcolor
-sta $db00,x
- sta $db01,x
- 
- rts
-
-collision
-  
- 
-
-lda bulletpositionl
      
-cmp objectspositionl
- 
-
- 
-beq addscore
- 
- 
-   
- 
- 
- 
  
  
 
-rts 
+ 
+
  
 zeroscore
 lda #0 
@@ -879,18 +903,14 @@ lda #0
 sta scoretens
 rts
 addscore		clc
-				 
+			
 				inc bgcolor
 				inc scoreones
 				jsr expnoz
-			 
-                lda objectspositionl
-                 adc #23 
-              
-                 sta objectspositionl
+			
               
                 jsr charanim
-				
+			 
 				lda scoreones
 			 
 				sec
@@ -899,8 +919,9 @@ addscore		clc
 				cmp #$ 
 				beq addtens
 			    
-               
-				jsr mainloop
+           
+        
+			 
 				rts
 
 addtens			 
@@ -965,7 +986,7 @@ printscore
 				rts
  
 somenum
-         !byte  1,5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,90,95,100,105,110,115,120,125,130,135,140,145,150,155,160,165,170,175,180,185,190,195,200,205,210,215,220,225,230,235,240,245,250,255
+         !byte  0,25,50,75,100,125,150,175,200,225,250,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0                
 
 circle1
  !byte %0000000
