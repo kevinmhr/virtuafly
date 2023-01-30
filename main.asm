@@ -41,7 +41,7 @@ voicefreq = $31
 scorehunds = $40fd
 scorethous = $40fa 
 bulletcolor = $2055
-objecbuffer = $6a00
+objecbuffer = $6c00
 clscount = $4a00
 *=$0801
         !byte    $1E, $08, $0A, $00, $9E, $20, $28,  $32, $30, $38, $30, $29, $3a, $8f, $20, $28, $43, $29, $20, $32, $30, $32, $31, $20, $4D, $54, $53, $56, $00, $00, $00
@@ -157,23 +157,27 @@ lda #0
 sta $6a00
 cpx #$ff
 bne clear6a00
-   
-loadenemies  
-inx
-lda somenum,x
- sta objecbuffer,x
- cpx #$ff
- bne loadenemies
-
+loadenemies 
+ldx #0  
+loadenemiesloop  
+iny
+lda somenum,y
+ sta objecbuffer,y
+ cmp #0
+ bne loadenemiesloop
+ 
 mainloop
-   jsr charanim
- ldy #0
- jsr cls
+
+jsr cls
+ 
+
+jsr display 
+ldy #$0
+ldx #$0
+jsr displayobjects 
+ 
 objectsdisplayed
-lda clscount
- eor clscount
- sta clscount
-   ror clscount
+
 
  
  
@@ -186,7 +190,7 @@ lda clscount
     inc objectschar4
  
 jsr scanjoy
- 
+  
  inc voicefreq
  
 
@@ -201,40 +205,103 @@ inc charactercolour
  
  
 
-
  
  
  
+ jsr printscore
 
  
   
+jsr enemytrigger
 
 
 
-jsr printscore
-
- jsr displayobjects 
-jsr display
  
 
  
+ 
+jsr wastetime
+jsr charanim
 jmp mainloop
 rts
+cls
+ldy #0
+clsloop
+iny
+ 
+ 
+ 
+ 
+ 
+ lda bgchar 
+sta $0400,y  
+sta $0500,y  
+sta $0600,y
+sta $06f0,y
+ 
+ 
+lda bgcolor
+ 
+ 
+sta $d800,y  
+sta $d900,y  
+sta $da00,y
+sta $daf0,y
+ 
+ 
+ cpy #$0
+ bne clsloop
+ cpy #$ff
+ beq mainloop
+ rts
+
+
+collision
+ ldx #0
+collisionloop
+inx
+
+ 
+lda objecbuffer,x
+cmp #255
+beq safearea
+cmp bulletpositionl
+beq score
+
+cpx #$ff
+bne collisionloop
+
+rts 
+score
+lda #255
+sta objecbuffer,x
+jsr addscore
+safearea 
+ txa
+ adc #1
+ tax
+
+
+
+rts 
 wastetime
+
+  ldx #$0
+wastetimeloop
   inx 
- 
- 
- cpx    #0
- bne wastetime
+ lda $0400,x
+ lda $0400,x
+ lda $0400,x
+ cpx    #$ff
+ bne wastetimeloop
  
  
 rts
-
 
 
 
 charanim
- 
+ iny
  
  ror $2260 
  
@@ -247,35 +314,11 @@ charanim
  ror $2265
   ror $2266
     ror $2267
- 
+ cpy #$ff
+ bne charanim
   rts
   
-cls
- 
-iny
- 
- 
- 
- 
- 
- lda bgchar 
-sta $0400,y  
-sta $0500,y  
-sta $0600,y  
-sta $06f0,y
- 
- 
-lda bgcolor
- 
- 
-sta $d800,y  
-sta $d900,y  
-sta $da00,y 
-sta $daf0,y 
- 
- 
- cpy #0
- bne cls
+
 
  rts
 cls3
@@ -367,11 +410,11 @@ scanjoy
  
            rts
 fire	
-   jsr collision
-    jsr collision
+  
+ jsr collision
   inc bulletcolor
   jsr lazbeep1 
- 
+
  
 
  
@@ -728,23 +771,7 @@ beq displaybulletpg4
 returntomain
  
 rts
-collision
-inx
-lda bulletpositionl
-cmp #$0
-beq jumptonotascore
-cmp objecbuffer,x
-beq score
-cpx #$ff
-bne collision
-rts
-score
-lda #0
-sta objecbuffer,x
 
-jsr addscore
-
-rts 
 jumptonotascore
 jsr notascore
 rts
@@ -801,98 +828,41 @@ sta $db00,x
  
 displayobjects 
  
- 
+ldy #$0
+objectsloop
 iny 
  
-ldx objecbuffer,y 
-
  
-lda objectschar1
-
+lda objecbuffer,y 
+ tax
+cpx #255
+beq bypass
 lda objectschar1
 sta $0500,x
 lda objectschar2
 sta $0501,x
 lda objectschar3
-sta $04d8,x
+sta $0528,x
 lda objectschar4
-sta $04d9,x
+sta $0529,x
 lda charactercolour
 sta $d900,x
 sta $d901,x
-sta $d8d8,x
-sta $d8d9,x
+sta $d928,x
+sta $d929,x
+
+
+ cpx #0
  
- cpy #$20
  
+ bne objectsloop
  
- bne displayobjects
- 
+bypass
 
 rts
 backtoloop
 jsr objectsdisplayed
 rts
- 
-displayobjectstwo
-
-lda objectschar1
-sta $0500,x
-lda objectschar2
-sta $0501,x
-lda objectschar3
-sta $04d8,x
-lda objectschar4
-sta $04d9,x
-lda charactercolour
-sta $d900,x
-sta $d901,x
-sta $d8d8,x
-sta $d8d9,x
- 
-rts
-displayobjectsthree
- 
-lda objectschar1
-sta $0600,x
-lda objectschar2
-sta $0601,x
-lda objectschar3
-sta $05d8,x
-lda objectschar4
-sta $05d9,x
-lda charactercolour
-sta $da00,x
-sta $da01,x
-sta $d9d8,x
-sta $d9d9,x
- 
-rts
-
-
-displayobjectsfour
- 
-
-lda objectschar1
-sta $0700,x
-lda objectschar2
-sta $0701,x
-lda objectschar3
-sta $06d8,x
-lda objectschar4
-sta $06d9,x
-lda charactercolour
-sta $db00,x
-sta $db01,x
-sta $dad8,x
-sta $dad9,x
-rts
- 
-
-     
- 
- 
-
  
 
  
@@ -902,6 +872,17 @@ sta scoreones
 lda #0
 sta scoretens
 rts
+enemytrigger
+lda scoreones
+cmp #3
+beq backtostart
+cmp #7
+beq backtostart
+ rts
+backtostart
+jmp loadenemies
+rts
+
 addscore		clc
 			
 				inc bgcolor
@@ -925,10 +906,14 @@ addscore		clc
 				rts
 
 addtens			 
+               
+                
                 inc scoretens
+			
 				lda #00
 				sta scoreones
-			    lda scoretens
+			   
+			   lda scoretens
 			    sec
 				sbc #10
 			    cmp #$
@@ -986,8 +971,8 @@ printscore
 				rts
  
 somenum
-         !byte  0,25,50,75,100,125,150,175,200,225,250,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0                
-
+         !byte    25,50,75,100,125,150,175,200,225,250,0
+        
 circle1
  !byte %0000000
 circle2 
