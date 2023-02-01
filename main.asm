@@ -61,7 +61,7 @@ lda #105
 sta character2
 lda #95
 sta character3
-lda #20
+lda #21
 sta positionl
 lda #03
 sta charactercolour
@@ -73,6 +73,8 @@ lda #$18
 sta $d018
  lda #02
  sta objectspositionh
+lda #02
+ sta bulletpositionl
  lda #02
  sta objectspositionl
   lda #$04
@@ -160,9 +162,9 @@ bne clear6a00
 loadenemies 
 ldx #0  
 loadenemiesloop  
-iny
-lda somenum,y
- sta objecbuffer,y
+inx
+lda somenum,x
+ sta objecbuffer,x
  cmp #0
  bne loadenemiesloop
  
@@ -170,17 +172,26 @@ mainloop
 
 jsr cls
  
+ jsr displaybullet
 
 jsr display 
 ldy #$0
 ldx #$0
+
+  
+ 
+ 
 jsr displayobjects 
  
+ 
+ 
+ jsr printscore
+
 objectsdisplayed
 
-
+jsr wastetime
  
- 
+ jsr charanim
 
 
  
@@ -201,14 +212,6 @@ jsr movejoy
 inc charactercolour
  
 
- jsr displaybullet
- 
- 
-
- 
- 
- 
- jsr printscore
 
  
   
@@ -220,17 +223,18 @@ jsr enemytrigger
 
  
  
-jsr wastetime
-jsr charanim
+
+
 jmp mainloop
 rts
 cls
+ldx #0
 ldy #0
 clsloop
-iny
+inx
+inc clscount
  
- 
- 
+ iny
  
  
  lda bgchar 
@@ -239,7 +243,6 @@ sta $0500,y
 sta $0600,y
 sta $06f0,y
  
- 
 lda bgcolor
  
  
@@ -247,60 +250,40 @@ sta $d800,y
 sta $d900,y  
 sta $da00,y
 sta $daf0,y
+  
  
  
  cpy #$0
  bne clsloop
  cpy #$ff
- beq mainloop
+ beq clsloop
  rts
 
 
-collision
- ldx #0
-collisionloop
-inx
 
- 
-lda objecbuffer,x
-cmp #255
-beq safearea
-cmp bulletpositionl
-beq score
-
-cpx #$ff
-bne collisionloop
-
-rts 
-score
-lda #255
-sta objecbuffer,x
-jsr addscore
-safearea 
- txa
- adc #1
- tax
-
-
-
-rts 
 wastetime
-
-  ldx #$0
+ 
+ ldx #0
 wastetimeloop
-  inx 
+ inx
  lda $0400,x
  lda $0400,x
  lda $0400,x
- cpx    #$ff
+ lda $0400,x
+ 
+ 
+ cpx #255
  bne wastetimeloop
- 
- 
 rts
 
 
 
 charanim
+ ldx #0
+ ldy #0
+
+charanimloop
+ 
  iny
  
  ror $2260 
@@ -315,84 +298,37 @@ charanim
   ror $2266
     ror $2267
  cpy #$ff
- bne charanim
+ bne charanimloop
+ 
   rts
   
 
 
  rts
-cls3
  
- 
- 
- iny
- lda bgchar 
-sta $0400,y  
-sta $0500,y  
-sta $0600,y  
-sta $06f0,y
- 
- 
-lda bgcolor
- 
- 
-sta $d800,y  
-sta $d900,y  
-sta $da00,y 
-sta $daf0,y 
- 
-  
- iny
- lda bgchar 
-sta $0400,y  
-sta $0500,y  
-sta $0600,y  
-sta $06f0,y
- 
- 
-lda bgcolor
- 
- 
-sta $d800,y  
-sta $d900,y  
-sta $da00,y 
-sta $daf0,y 
- 
- 
- 
- 
-
- rts
-cls2
- 
- iny
- tya 
- adc #40
- tay
- lda bgchar 
-sta $0400,y  
-sta $0500,y  
-sta $0600,y  
-sta $06f0,y
- 
- 
- 
- 
- 
-;rts
 clscol
-;lda #6
+ ldx #0
+ ldy #0
+clscolloop
+inx
+ iny
+ 
+ 
+ 
+ 
  
 lda bgcolor
  
  
 sta $d800,y  
-sta $d900,y 
-sta $da00,y 
-sta $daf0,y 
+sta $d900,y  
+sta $da00,y
+sta $daf0,y
  
  
-
+ 
+ cpx #$0
+ beq clscolloop
  rts
 
 scanjoy            
@@ -410,19 +346,20 @@ scanjoy
  
            rts
 fire	
-  
- jsr collision
+  lda positionl
+sta bulletpositionl
+
+ lda positionh
+sta bulletpositionh
+ 
+
   inc bulletcolor
   jsr lazbeep1 
 
- 
 
  
 notascore
-  
- jsr wastetime
  
-jsr displaybullet
 
 lda #$7f
 sta lastkey
@@ -433,11 +370,7 @@ rts
 storekey 
  
  sta lastkey
-  lda positionl
-sta bulletpositionl
-
- lda positionh
-sta bulletpositionh
+  
     
  
 rts
@@ -485,12 +418,11 @@ left
     sec
     sbc #01
     sta positionl
-   
+ 
   bcc counterrecount
+   
  
- 
-    
-     jsr display
+   
      
     rts
 counterrecount
@@ -510,7 +442,7 @@ jsr tickingsound
   
   bcs recount
     
-    jsr display
+   
    
     rts
 recount
@@ -609,7 +541,7 @@ display
 
 
 lda positionh
-ldx positionl
+ldy positionl
 cmp #$01
 beq displaypageone
 cmp #$02
@@ -624,52 +556,52 @@ rts
 displaypageone
 
 lda character 
-sta $0400,x
+sta $0400,y
 lda character1 
-sta $0401,x
+sta $0401,y
 lda character2 
-sta $0428,x
+sta $0428,y
 lda character3 
-sta $0429,x
+sta $0429,y
 lda charactercolour
-sta $d800,x
-sta $d801,x
-sta $d828,x
-sta $d829,x
+sta $d800,y
+sta $d801,y
+sta $d828,y
+sta $d829,y
  
 rts
 displaypagetwo
 
 lda character 
-sta $0500,x
+sta $0500,y
 lda character1 
-sta $0501,x
+sta $0501,y
 lda character2 
-sta $0528,x
+sta $0528,y
 lda character3 
-sta $0529,x
+sta $0529,y
 lda charactercolour
-sta $d900,x
-sta $d901,x
-sta $d928,x
-sta $d929,x
+sta $d900,y
+sta $d901,y
+sta $d928,y
+sta $d929,y
  
 rts
 displaypagethree
  
 lda character
-sta $0600,x
+sta $0600,y
 lda character1 
-sta $0601,x
+sta $0601,y
 lda character2 
-sta $0628,x
+sta $0628,y
 lda character3 
-sta $0629,x
+sta $0629,y
 lda charactercolour
-sta $da00,x
-sta $da01,x
-sta $da28,x
-sta $da29,x
+sta $da00,y 
+sta $da01,y
+sta $da28,y
+sta $da29,y
  
 rts
 
@@ -678,18 +610,18 @@ displaypagefour
  
 
 lda character
-sta $0700,x
+sta $0700,y
 lda character1 
-sta $0701,x
+sta $0701,y
 lda character2 
-sta $0728,x
+sta $0728,y
 lda character3 
-sta $0729,x
+sta $0729,y
 lda charactercolour
-sta $db00,x
-sta $db01,x
-sta $db28,x
-sta $db29,x
+sta $db00,y
+sta $db01,y
+sta $db28,y
+sta $db29,y
 rts
  
  
@@ -738,19 +670,20 @@ dec bulletpositionh
 rts
 displaybullet
  
-
+ldx #0
+displaybulletloop
 
 ldx bulletpositionl
 sec
 txa
 sbc #40
+
   tax
 stx bulletpositionl
   bcc decrbulletpositionh
  stx bulletpositionl
  
- 
-  
+
 
  ldx bulletpositionl
    
@@ -765,7 +698,8 @@ cmp #$04
 beq displaybulletpg4
 
  
-
+cpx #$ff
+bne displaybulletloop
  
  
 returntomain
@@ -826,14 +760,35 @@ sta $db00,x
  rts
 
  
+score
+
+lda #255
+sta objecbuffer,y
+jsr addscore
+safearea 
+ tya
+ adc #1 
+ tay
+
+
+
+rts 
 displayobjects 
- 
-ldy #$0
+ ldx #1
+ldy #$1
 objectsloop
 iny 
- 
- 
+lda  bulletpositionl
+cmp #255
+beq safearea
+cmp #0
+beq safearea 
 lda objecbuffer,y 
+cmp bulletpositionl
+beq score
+
+lda objecbuffer,y 
+ 
  tax
 cpx #255
 beq bypass
@@ -885,9 +840,9 @@ rts
 
 addscore		clc
 			
-				inc bgcolor
-				inc scoreones
 				jsr expnoz
+				inc scoreones
+				
 			
               
                 jsr charanim
