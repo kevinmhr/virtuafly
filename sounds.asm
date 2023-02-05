@@ -67,29 +67,29 @@ soundend3
          
          
 tickingsound
-         jsr soundend2
-         lda #%00001011 ; 0 9
+         jsr soundend3
+         lda #%00001111 ; 0 9
          sta attdec
-         lda #%00000000 ; 0 0
+         lda #%00000111 ; 0 0
          sta susrel
          lda #15        ; 15
          sta volume
       
-         lda objectspositionh; 12
+         lda voicefreq; 12
          sta hifreq
-         lda objectspositionh         ; 8
+         lda positionl       ; 8
          sta lofreq
-         lda #%00010100       ; 32 saw
+         lda 15      ; 32 saw
          sta wavefm
 
-         jsr soundgo2
+         jsr soundgo3
          rts
          
 lazbeep1
          jsr soundend1
-         lda #%00000100 ; 0 9
+         lda #%00000111 ; 0 9
          sta attdec
-         lda #%00010000 ; 0 0
+         lda #%00001000 ; 0 0
          sta susrel
          lda #15        ; 15
          sta volume
@@ -137,7 +137,7 @@ lazbeep3
         
         
          sta lofreq
-         lda #25  ; 32 saw
+         lda #32  ; 32 saw
          sta wavefm
 
          jsr soundgo2
@@ -145,17 +145,18 @@ lazbeep3
 
 expnoz
          jsr soundend3
-         lda #%00001001 ; 1 9
+         
+         lda #%00000111 ; 1 9
          sta attdec
-         lda #%00000000 ; 0 0
+         lda #%00000011 ; 0 0
          sta susrel
          lda #15        ; 15
          sta volume
-         lda objectspositionh        ; 1
+         lda voicefreq; 1
          sta hifreq
-         lda #16        ; 16
+         lda  voicefreq   ; 16
          sta lofreq
-         lda #128      ; 128 noise
+         lda #128 ; 128 noise
          sta wavefm
 
          jsr soundgo3

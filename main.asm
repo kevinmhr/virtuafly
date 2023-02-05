@@ -31,6 +31,9 @@ objectschar2 = $6689
 objectschar3 = $6643
 objectschar4 = $6699
 bulletchar =$6634
+oppbulletchar =$6635
+opposebulletposl = $6249
+opposebulletposh = $6250
 objectspositionh = $29
 objectspositionl = $30
 bulletpositionh = $6848
@@ -48,51 +51,7 @@ clscount = $4a00
  
 *=$0820
               
-init lda #0
-sta $d020
-sta $d021
-lda #$04
-sta positionh
-lda #125
-sta character
-lda #109
-sta character1
-lda #105
-sta character2
-lda #95
-sta character3
-lda #21
-sta positionl
-lda #03
-sta charactercolour
-lda #0
-sta scoreones
-sta scoretens 
-sta scorehunds
-lda #$18
-sta $d018
- lda #02
- sta objectspositionh
-lda #02
- sta bulletpositionl
- lda #02
- sta objectspositionl
-  lda #$04
- sta bulletpositionh
-lda #76
-sta bgchar 
-lda #2
-sta bgcolor 
-lda #73
-sta objectschar1
-lda #85
-sta objectschar2
-lda #74
-sta objectschar3
-lda #75
-sta objectschar4
-lda #33
-sta bulletchar
+
 lda $01    
 and #251    
 sta $01    
@@ -151,6 +110,55 @@ sta $2266
  lda circle8 
 sta $2267         
  
+init lda #0
+sta $d020
+sta $d021
+lda #$04
+sta positionh
+lda #125
+sta character
+lda #109
+sta character1
+lda #105
+sta character2
+lda #95
+sta character3
+lda #21
+sta positionl
+lda #03
+sta charactercolour
+lda #0
+sta scoreones
+sta scoretens 
+sta scorehunds
+sta scorethous
+lda #$18
+sta $d018
+ lda #02
+ sta objectspositionh
+lda #00
+ sta bulletpositionl
+ lda #02
+ sta objectspositionl
+  lda #$00
+ sta bulletpositionh
+   lda #$01
+ sta opposebulletposh
+lda #76
+sta bgchar 
+lda #2
+sta bgcolor 
+lda #73
+sta objectschar1
+lda #85
+sta objectschar2
+lda #74
+sta objectschar3
+lda #75
+sta objectschar4
+lda #33
+sta bulletchar 
+ 
 
 ldx #0
 clear6a00
@@ -161,53 +169,56 @@ cpx #$ff
 bne clear6a00
 loadenemies 
 ldx #0  
+ 
 loadenemiesloop  
 inx
 lda somenum,x
+ 
  sta objecbuffer,x
- cmp #0
+cmp #0
  bne loadenemiesloop
  
 mainloop
+inc oppbulletchar
 
-jsr cls
  
+jsr wastetime
+ 
+jsr cls
+
  jsr displaybullet
 
 jsr display 
-ldy #$0
-ldx #$0
+
 
   
  
- 
 jsr displayobjects 
  
- 
- 
- jsr printscore
 
+  jsr displayoppbullet
+ 
+ jsr bullettobullet
+ jsr printscore
+ 
+ 
 objectsdisplayed
 
-jsr wastetime
- 
- jsr charanim
-
-
+ror voicefreq
  
  inc objectschar1
   inc objectschar2
    inc objectschar3
     inc objectschar4
- 
+
 jsr scanjoy
   
- inc voicefreq
+
  
 
 jsr movejoy
 
- 
+
 
 inc charactercolour
  
@@ -216,7 +227,6 @@ inc charactercolour
  
   
 jsr enemytrigger
-
 
 
  
@@ -228,6 +238,9 @@ jsr enemytrigger
 jmp mainloop
 rts
 cls
+ 
+
+
 ldx #0
 ldy #0
 clsloop
@@ -260,16 +273,22 @@ sta $daf0,y
  rts
 
 
-
 wastetime
  
  ldx #0
 wastetimeloop
  inx
- lda $0400,x
- lda $0400,x
- lda $0400,x
- lda $0400,x
+ror $2260 
+ror $2261
+ror $2262
+ror $2263 
+ror $2264
+ror $2265
+ror $2266
+ror $2267
+ 
+   inc opposebulletposl
+
  
  
  cpx #255
@@ -279,39 +298,27 @@ rts
 
 
 charanim
+ 
  ldx #0
- ldy #0
-
+ 
 charanimloop
+ inx
  
- iny
  
- ror $2260 
  
-         ror $2261
- ror $2262
+    
+ cpx #$ff 
  
-  ror $2263 
- 
-  ror $2264
- ror $2265
-  ror $2266
-    ror $2267
- cpy #$ff
- bne charanimloop
  
   rts
-  
-
-
- rts
+ 
  
 clscol
  ldx #0
- ldy #0
+ 
 clscolloop
 inx
- iny
+ 
  
  
  
@@ -536,9 +543,373 @@ sbc #24
 sta positionl
  
 rts
-display 
+
  
 
+
+
+ 
+ 
+ 
+ 
+ 
+resetobjecthighbyte 
+inc objectspositionh
+lda objectspositionh
+cmp #04 
+beq objecthighreset
+inc objectspositionh
+rts
+objecthighreset
+lda #0
+sta objectspositionh
+inc objectspositionh
+rts
+ 
+ 
+ 
+
+ 
+reloadposition
+
+lda positionh
+sta bulletpositionh
+ 
+rts
+
+decrbulletpositionh
+
+
+
+
+dec bulletpositionh
+ 
+ 
+ 
+rts
+displaybullet
+ 
+ldx #0
+displaybulletloop
+
+ldx bulletpositionl
+sec
+txa
+sbc #40
+
+  tax
+stx bulletpositionl
+  bcc decrbulletpositionh
+ stx bulletpositionl
+ 
+
+
+ ldx bulletpositionl
+   
+lda bulletpositionh
+cmp #$01
+beq displaybulletpg1
+cmp #$02
+beq displaybulletpg2
+cmp #$03
+beq displaybulletpg3 
+cmp #$04
+beq displaybulletpg4
+
+ 
+cpx #$ff
+bne displaybulletloop
+ 
+ 
+returntomain
+
+ 
+rts
+
+jumptonotascore
+jsr notascore
+rts
+displaybulletpg1
+
+lda bulletchar
+sta $0400,x
+ sta $0401,x
+lda bulletcolor
+sta $d800,x
+ sta $d801,x
+ 
+
+
+rts
+displaybulletpg2
+ 
+lda bulletchar
+sta $0500,x
+sta $0501,x
+lda bulletcolor
+sta $d900,x
+sta $d901,x
+ 
+rts
+displaybulletpg3
+ 
+ 
+ 
+lda bulletchar
+
+sta $0600,x
+ sta $0601,x
+lda bulletcolor
+sta $da00,x
+ sta $da01,x
+  
+ rts
+
+
+displaybulletpg4
+ldx bulletpositionl
+
+lda bulletchar
+sta $0700,x
+ 
+ sta $0701,x
+lda bulletcolor
+sta $db00,x
+ sta $db01,x
+ 
+ rts
+incroppbulletpositionh
+
+
+ 
+
+inc opposebulletposh
+ 
+ 
+ 
+rts
+ 
+ 
+ 
+ 
+ 
+
+displayoppbullet
+ ldx #0
+
+ 
+ ldy #0
+displayoppbulletloop
+inx
+iny
+ 
+ 
+clc
+lda opposebulletposl
+adc #41
+
+  tax
+stx opposebulletposl
+  bcs incroppbulletpositionh
+ stx opposebulletposl
+ 
+
+
+
+    ldx opposebulletposl
+lda opposebulletposh
+cmp #$01
+beq displayoppbulletpg1
+cmp #$02
+beq displayoppbulletpg2
+cmp #$03
+beq displayoppbulletpg3 
+cmp #$04
+beq displayoppbulletpg4
+
+  
+cpx #$ff
+bne displayoppbulletloop
+ 
+rts
+ 
+
+displayoppbulletpg1
+
+lda oppbulletchar
+sta $0400,x
+ sta $0401,x
+lda bulletcolor
+sta $d800,x
+ sta $d801,x
+ 
+
+
+rts
+displayoppbulletpg2
+ 
+lda oppbulletchar
+sta $0500,x
+sta $0501,x
+lda bulletcolor
+sta $d900,x
+sta $d901,x
+ 
+rts
+displayoppbulletpg3
+ 
+ 
+ 
+lda oppbulletchar
+
+sta $0600,x
+ sta $0601,x
+lda bulletcolor
+sta $da00,x
+ sta $da01,x
+  
+ rts
+
+
+displayoppbulletpg4
+ 
+
+lda oppbulletchar
+sta $0700,x
+ 
+ sta $0701,x
+lda bulletcolor
+sta $db00,x
+ sta $db01,x
+ 
+ rts
+
+bullettobullet
+lda bulletpositionl
+cmp opposebulletposl
+beq bullettobulleth
+rts
+bullettobulleth
+lda bulletpositionh
+cmp opposebulletposh
+beq score
+rts
+
+score
+
+lda #255
+sta objecbuffer,y
+
+jsr addscore
+tya 
+cmp #0
+beq showgameover
+safearea 
+ tya
+ adc #1 
+ tay
+
+
+
+rts 
+
+displayobjects 
+ ldx #1
+ldy #$1
+objectsloop
+iny 
+clc
+ 
+lda  bulletpositionl
+cmp #255
+beq safearea
+cmp #0
+beq safearea 
+tya
+tax
+ 
+ 
+ 
+lda objecbuffer,y 
+cmp bulletpositionl
+beq score
+
+ 
+lda objecbuffer,y
+ 
+ tax
+cpx #255
+beq bypass
+cpx #0
+beq bypass
+lda objectschar1
+sta $0500,x
+lda objectschar2
+sta $0501,x
+lda objectschar3
+sta $0528,x
+lda objectschar4
+sta $0529,x
+lda charactercolour
+sta $d900,x
+sta $d901,x
+sta $d928,x
+sta $d929,x
+
+
+ cpx #255
+ 
+ 
+ bne objectsloop
+ 
+bypass
+
+rts
+ 
+
+showgameover 
+ldx #0
+ldy #0
+showgameoverloop
+iny
+ 
+lda gameovertex,y
+ 
+
+sta $0550,y
+sta $d850,y
+cpy #$ff
+bne showgameoverloop
+ 
+lda $dc00
+ 
+cmp #$6f
+bne showgameoverloop
+cmp #$6f
+beq reset
+ 
+
+rts
+reset 
+ 
+ 
+jsr init
+rts
+
+
+collision
+lda positionl
+cmp opposebulletposl
+beq forward
+
+rts 
+forward 
+lda positionh
+cmp opposebulletposh
+beq showgameover
+rts 
+display 
+jsr collision 
 
 lda positionh
 ldy positionl
@@ -627,198 +998,12 @@ rts
  
 
  
- 
-
- 
- 
- 
- 
- 
-resetobjecthighbyte 
-inc objectspositionh
-lda objectspositionh
-cmp #04 
-beq objecthighreset
-inc objectspositionh
-rts
-objecthighreset
-lda #0
-sta objectspositionh
-inc objectspositionh
-rts
- 
- 
- 
-
- 
-reloadposition
-
-lda positionh
-sta bulletpositionh
- 
-rts
-
-decrbulletpositionh
 
 
 
 
-dec bulletpositionh
- 
- 
- 
-rts
-displaybullet
- 
-ldx #0
-displaybulletloop
-
-ldx bulletpositionl
-sec
-txa
-sbc #40
-
-  tax
-stx bulletpositionl
-  bcc decrbulletpositionh
- stx bulletpositionl
- 
 
 
- ldx bulletpositionl
-   
-lda bulletpositionh
-cmp #$01
-beq displaybulletpg1
-cmp #$02
-beq displaybulletpg2
-cmp #$03
-beq displaybulletpg3 
-cmp #$04
-beq displaybulletpg4
-
- 
-cpx #$ff
-bne displaybulletloop
- 
- 
-returntomain
- 
-rts
-
-jumptonotascore
-jsr notascore
-rts
-displaybulletpg1
-
-lda bulletchar
-sta $0400,x
- sta $0401,x
-lda bulletcolor
-sta $d800,x
- sta $d801,x
- 
-
-
-rts
-displaybulletpg2
- 
-lda bulletchar
-sta $0500,x
-sta $0501,x
-lda bulletcolor
-sta $d900,x
-sta $d901,x
- 
-rts
-displaybulletpg3
- 
- 
- 
-lda bulletchar
-
-sta $0600,x
- sta $0601,x
-lda bulletcolor
-sta $da00,x
- sta $da01,x
-  
- rts
-
-
-displaybulletpg4
-ldx bulletpositionl
-
-lda bulletchar
-sta $0700,x
- 
- sta $0701,x
-lda bulletcolor
-sta $db00,x
- sta $db01,x
- 
- rts
-
- 
-score
-
-lda #255
-sta objecbuffer,y
-jsr addscore
-safearea 
- tya
- adc #1 
- tay
-
-
-
-rts 
-displayobjects 
- ldx #1
-ldy #$1
-objectsloop
-iny 
-lda  bulletpositionl
-cmp #255
-beq safearea
-cmp #0
-beq safearea 
-lda objecbuffer,y 
-cmp bulletpositionl
-beq score
-
-lda objecbuffer,y 
- 
- tax
-cpx #255
-beq bypass
-lda objectschar1
-sta $0500,x
-lda objectschar2
-sta $0501,x
-lda objectschar3
-sta $0528,x
-lda objectschar4
-sta $0529,x
-lda charactercolour
-sta $d900,x
-sta $d901,x
-sta $d928,x
-sta $d929,x
-
-
- cpx #0
- 
- 
- bne objectsloop
- 
-bypass
-
-rts
-backtoloop
-jsr objectsdisplayed
-rts
- 
 
  
 zeroscore
@@ -838,14 +1023,16 @@ backtostart
 jmp loadenemies
 rts
 
+ 
+ 
 addscore		clc
 			
 				jsr expnoz
 				inc scoreones
-				
-			
+			 
+			   inc bgcolor
               
-                jsr charanim
+               
 			 
 				lda scoreones
 			 
@@ -905,29 +1092,32 @@ printscore
 				lda scoreones
 				adc #$30
 				
-				sta $0468
+				sta $0408
 				lda #01 
-				sta $d868
+				sta $d808
 				lda scoretens
 				adc #$30
-				sta $0467
+				sta $0407
 				lda #01
-				sta $d867
+				sta $d807
 				lda scorehunds
 				adc #$30
-				sta $0466
+				sta $0406
 				lda #01
-				sta $d866
+				sta $d806
 				lda scorethous
 				adc #$30
-				sta $0465
+				sta $0405
 				lda #01
-				sta $d865	
+				sta $d805	
 				rts
  
 somenum
-         !byte    25,50,75,100,125,150,175,200,225,250,0
-        
+         !byte     50,75,100,125,150,175,200,225,250,0 
+gameovertex
+
+          !scr " gameover message once upon a time there was a lonely something in a lonely something area so you have to move his ass around and maybe do a little of interactions with some other things around to be continued also my name is keyvan mehrbakhsh  " 
+ 
 circle1
  !byte %0000000
 circle2 
