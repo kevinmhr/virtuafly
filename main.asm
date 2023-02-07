@@ -184,7 +184,9 @@ lda #0
 sta $6a00,x
 cpx #$ff
 bne clear6a00
+
 loadenemies 
+sei
 lda #0
 ldy #0  
  
@@ -198,6 +200,7 @@ cmp #0
  bne loadenemiesloop
  
 mainloop
+sei
 lda opposebulletposl
 adc #2
 
@@ -221,7 +224,7 @@ jsr displayobjects
  
 
   jsr displayoppbullet
- jsr collision 
+
  jsr bullettobullet
  jsr printscore
  
@@ -241,7 +244,7 @@ jsr scanjoy
  
 
 jsr movejoy
-
+ jsr collision 
 
 
 inc charactercolour
@@ -486,7 +489,7 @@ down
  
  
  
- jsr display
+ 
  
   
     rts
@@ -502,8 +505,7 @@ jsr tickingsound
    
  
  bcc decreasehibyte
-    
-  jsr display
+ 
  
 rts
 
@@ -515,7 +517,7 @@ dec positionh
 lda positionh
 cmp #0
 beq inchibyteagain
-jsr display
+ 
  
 rts
 
@@ -528,7 +530,7 @@ inc positionh
 lda positionh
 cmp #5
 beq dechibyteagain
-jsr display
+ 
  
 rts
 dechibyteagain
@@ -890,15 +892,15 @@ jsr expnoz2
 ldx #0
 ldy #0
 showgameoverloop
-inx
+iny
 
  
-lda gameovertex,x
+lda gameovertex,y
  
 
-sta $0550,x
-sta $d850,x
-cpx #$ff
+sta $0550,y
+sta $d850,y
+cpy #$ff
 bne showgameoverloop
  
 lda $dc00
@@ -911,7 +913,9 @@ beq reset
 
 rts
 reset 
- 
+lda #0
+ldx #0
+ldy #0
  
 jsr init
 rts
