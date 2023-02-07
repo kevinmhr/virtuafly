@@ -126,10 +126,17 @@ iny
  
 bne copysomecharactersloop
 
- 
-init lda #0
+
+init 
+lda #20
+sta positionl
+ldx #0
+ldy #0
+
+lda #0
 sta $d020
 sta $d021
+
 lda #$04
 sta positionh
 lda #77
@@ -140,8 +147,7 @@ lda #78
 sta character2
 lda #80
 sta character3
-lda #21
-sta positionl
+
 lda #03
 sta charactercolour
 lda #0
@@ -153,13 +159,14 @@ lda #$18
 sta $d018
  lda #02
  sta objectspositionh
-lda #00
+lda positionl
  sta bulletpositionl
- lda #02
- sta objectspositionl
-  lda #$00
+ 
+  lda positionh
  sta bulletpositionh
-   lda #$01
+     lda #$44
+ sta opposebulletposl
+  lda #$01
  sta opposebulletposh
 lda #76
 sta bgchar 
@@ -178,40 +185,36 @@ sta bulletchar
  
 
 ldx #0
-clear6a00
-inx
-lda #0
-sta $6a00,x
-cpx #$ff
-bne clear6a00
+ 
 
 loadenemies 
-sei
-lda #0
-ldy #0  
+ 
+ 
+ldx #0  
  
 loadenemiesloop  
-lda somenum,y
-iny
+
+lda somenum,x
+inx
 
  
- sta objecbuffer,y
-cmp #0
+ sta objecbuffer,x
+cpx #10
  bne loadenemiesloop
  
 mainloop
-sei
-lda opposebulletposl
-adc #2
+inc clscount
+lda clscount
+eor clscount
+sta clscount
 
-   
-sta opposebulletposl
-sta oppbulletchar
-
- 
+inc oppbulletchar
 jsr wastetime
  
-jsr cls
+ jsr cls
+
+  jsr collision 
+
 
  jsr displaybullet
 
@@ -227,7 +230,7 @@ jsr displayobjects
 
  jsr bullettobullet
  jsr printscore
- 
+
  
 objectsdisplayed
 
@@ -244,25 +247,28 @@ jsr scanjoy
  
 
 jsr movejoy
- jsr collision 
+
 
 
 inc charactercolour
  
-jsr enemytrigger
+ jsr enemytrigger
  
 
 jmp mainloop
 rts
 cls
  
+ 
 
+ 
 
 ldx #0
 ldy #0
 clsloop
 inx
-inc clscount
+
+
  
  iny
  
@@ -285,16 +291,17 @@ sta $daf0,y
  
  cpy #$0
  bne clsloop
- cpy #$ff
- beq clsloop
+ 
  rts
 
 
 wastetime
- 
+
  ldx #0
 wastetimeloop
  inx
+ 
+ 
 ror $2260 
 ror $2261
 ror $2262
@@ -303,29 +310,12 @@ ror $2264
 ror $2265
 ror $2266
 ror $2267
-
+ cpx clscount
  
- 
- cpx #255
  bne wastetimeloop
 rts
 
-
-
-charanim
  
- ldx #0
- 
-charanimloop
- inx
- 
- 
- 
-    
- cpx #$ff 
- 
- 
-  rts
  
  
 clscol
@@ -602,10 +592,10 @@ dec bulletpositionh
  
 rts
 displaybullet
- 
+ ldy #0
 ldx #0
 displaybulletloop
-
+ 
 ldx bulletpositionl
 sec
 txa
@@ -631,7 +621,7 @@ cmp #$04
 beq displaybulletpg4
 
  
-cpx #$ff
+cpy #$ff
 bne displaybulletloop
  
  
@@ -681,7 +671,7 @@ sta $da00,x
 
 
 displaybulletpg4
-ldx bulletpositionl
+ 
 
 lda bulletchar
 sta $0700,x
@@ -694,14 +684,18 @@ sta $db00,x
  rts
 incroppbulletpositionh
 
+lda opposebulletposl
+adc #1
 
+   
+sta opposebulletposl
  
 
-inc opposebulletposh
+
 lda opposebulletposh
-cmp #5
+cmp #4
 beq resetopposebulletposh
- 
+inc opposebulletposh
  
 rts
 resetopposebulletposh 
@@ -720,11 +714,12 @@ displayoppbullet
  
  ldy #0
 displayoppbulletloop
+clc
 inx
 iny
 
  
-clc
+
 lda opposebulletposl
 adc #38
 
@@ -748,7 +743,7 @@ cmp #$04
 beq displayoppbulletpg4
 
   
-cpx #$ff
+cpy #$ff
 bne displayoppbulletloop
  
 rts
@@ -805,13 +800,16 @@ sta $db00,x
  rts
 
 bullettobullet
-lda bulletpositionl
-cmp opposebulletposl
+
+lda opposebulletposl
+cmp bulletpositionl
+
 beq bullettobulleth
 rts
 bullettobulleth
-lda bulletpositionh
-cmp opposebulletposh
+lda opposebulletposh
+cmp bulletpositionh
+lda opposebulletposh
 beq score
 rts
 
@@ -832,28 +830,36 @@ safearea
 
 
 rts 
-
-displayobjects 
- ldx #1
-ldy #$1
-objectsloop
-iny 
-clc
- 
-lda  bulletpositionl
+bullettoboxcollision
+lda bulletpositionl
 cmp #255
 beq safearea
 cmp #0
-beq safearea 
-tya
-tax
- 
- 
- 
+beq safearea
 lda objecbuffer,y 
 cmp bulletpositionl
-beq score
+beq checkhigh
+rts
+checkhigh
+ 
+lda bulletpositionh
 
+cmp #2
+beq score
+rts
+
+displayobjects 
+ ldx #2
+ldy #$2
+objectsloop
+iny 
+ 
+ 
+
+ 
+ 
+
+jsr bullettoboxcollision
  
 lda objecbuffer,y
  
@@ -877,7 +883,7 @@ sta $d928,x
 sta $d929,x
 
 
- cpx #255
+ cpy #255
  
  
  bne objectsloop
@@ -888,8 +894,9 @@ rts
  
 
 showgameover 
+
 jsr expnoz2
-ldx #0
+ 
 ldy #0
 showgameoverloop
 iny
@@ -900,17 +907,17 @@ lda gameovertex,y
 
 sta $0550,y
 sta $d850,y
-cpy #$ff
+cpy #$f0
 bne showgameoverloop
  
 lda $dc00
- 
 cmp #$6f
-bne showgameoverloop
+bne showgameoverloop 
+ 
 cmp #$6f
 beq reset
  
-
+jmp mainloop
 rts
 reset 
 lda #0
@@ -922,15 +929,15 @@ rts
 
 
 collision
-lda positionl
-adc #1
-cmp opposebulletposl
+lda opposebulletposl
+ 
+cmp positionl
 beq forward
 
 rts 
 forward 
-lda positionh
-cmp opposebulletposh
+lda opposebulletposh
+cmp positionh
 beq showgameover
 rts 
 display 
@@ -1038,20 +1045,22 @@ lda #0
 sta scoretens
 rts
 enemytrigger
-lda scoreones
-cmp #3
+ldy scoreones
+cpy #3
 beq backtostart
-cmp #7
+cpy #7
 beq backtostart
  rts
 backtostart
-jsr clear6a00
+jsr loadenemies
 rts
 
  
  
 addscore		clc
-			
+			    lda #0
+			    ldx #0
+			    ldy #0
 				jsr expnoz
 				inc scoreones
 			 
