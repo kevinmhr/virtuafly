@@ -108,20 +108,37 @@ sta $2265
 lda circle7 
 sta $2266 
  lda circle8 
-sta $2267         
+sta $2267        
+
+copysomecharacters
+ldy #0
+copysomecharactersloop
+
+lda theship,y
+sta $2268,y
+lda theship2,y
+sta $2270,y
+lda theship3,y
+sta $2278,y
+lda theship4,y
+sta $2280,y
+iny
+ 
+bne copysomecharactersloop
+
  
 init lda #0
 sta $d020
 sta $d021
 lda #$04
 sta positionh
-lda #125
+lda #77
 sta character
-lda #109
+lda #79
 sta character1
-lda #105
+lda #78
 sta character2
-lda #95
+lda #80
 sta character3
 lda #21
 sta positionl
@@ -164,22 +181,29 @@ ldx #0
 clear6a00
 inx
 lda #0
-sta $6a00
+sta $6a00,x
 cpx #$ff
 bne clear6a00
 loadenemies 
-ldx #0  
+lda #0
+ldy #0  
  
 loadenemiesloop  
-inx
-lda somenum,x
+lda somenum,y
+iny
+
  
- sta objecbuffer,x
+ sta objecbuffer,y
 cmp #0
  bne loadenemiesloop
  
 mainloop
-inc oppbulletchar
+lda opposebulletposl
+adc #2
+
+   
+sta opposebulletposl
+sta oppbulletchar
 
  
 jsr wastetime
@@ -197,7 +221,7 @@ jsr displayobjects
  
 
   jsr displayoppbullet
- 
+ jsr collision 
  jsr bullettobullet
  jsr printscore
  
@@ -222,18 +246,8 @@ jsr movejoy
 
 inc charactercolour
  
-
-
- 
-  
 jsr enemytrigger
-
-
  
-
- 
- 
-
 
 jmp mainloop
 rts
@@ -286,8 +300,6 @@ ror $2264
 ror $2265
 ror $2266
 ror $2267
- 
-   inc opposebulletposl
 
  
  
@@ -684,11 +696,17 @@ incroppbulletpositionh
  
 
 inc opposebulletposh
- 
+lda opposebulletposh
+cmp #5
+beq resetopposebulletposh
  
  
 rts
- 
+resetopposebulletposh 
+
+lda #1 
+sta opposebulletposh
+rts
  
  
  
@@ -702,11 +720,11 @@ displayoppbullet
 displayoppbulletloop
 inx
 iny
- 
+
  
 clc
 lda opposebulletposl
-adc #41
+adc #38
 
   tax
 stx opposebulletposl
@@ -868,17 +886,19 @@ rts
  
 
 showgameover 
+jsr expnoz2
 ldx #0
 ldy #0
 showgameoverloop
-iny
+inx
+
  
-lda gameovertex,y
+lda gameovertex,x
  
 
-sta $0550,y
-sta $d850,y
-cpy #$ff
+sta $0550,x
+sta $d850,x
+cpx #$ff
 bne showgameoverloop
  
 lda $dc00
@@ -899,6 +919,7 @@ rts
 
 collision
 lda positionl
+adc #1
 cmp opposebulletposl
 beq forward
 
@@ -909,7 +930,7 @@ cmp opposebulletposh
 beq showgameover
 rts 
 display 
-jsr collision 
+
 
 lda positionh
 ldy positionl
@@ -1020,7 +1041,7 @@ cmp #7
 beq backtostart
  rts
 backtostart
-jmp loadenemies
+jsr clear6a00
 rts
 
  
@@ -1135,11 +1156,46 @@ circle7
 circle8 
  !byte %0000000
  
- 
- 
 
-
-  
  
+theship   !byte   %00000001
+          !byte   %00000001
+          !byte   %00010001
+          !byte   %00010011
+          !byte   %00011101
+          !byte   %00010111
+          !byte   %00100001
+          !byte   %11111111
+          
+theship2              
+           !byte   %00000010
+           !byte   %00001101
+           !byte   %00000011
+           !byte   %11111111
+           !byte   %00000111
+           !byte   %00000001
+           !byte   %00000000
+           !byte   %00000000
+           
+theship3              
+            !byte  %10000000
+            !byte  %10000000
+            !byte  %10001000
+            !byte  %11001000
+            !byte  %10111000
+            !byte  %11101000
+            !byte  %10000100
+            !byte  %11111111
+theship4              
+             
+            !byte  %01000000
+            !byte  %10110000
+            !byte  %11000000
+            !byte  %11111111
+            !byte  %11100000
+            !byte  %10000000
+            !byte  %00000000
+            !byte  %00000000
+         
  !source "sounds.asm"
 

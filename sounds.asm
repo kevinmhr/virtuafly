@@ -161,6 +161,24 @@ expnoz
 
          jsr soundgo3
          rts
+expnoz2
+         jsr soundend3
+         
+         lda #%00001011 ; 1 9
+         sta attdec
+         lda #%00001011 ; 0 0
+         sta susrel
+         lda #15        ; 15
+         sta volume
+         lda #$15  
+         sta hifreq
+         lda #$25 ; 16
+         sta lofreq
+         lda #128 ; 128 noise
+         sta wavefm
+
+         jsr soundgo3
+         rts
      ;      lda #0
         ; sta $d404     ; wf1
          ;     lda #0
