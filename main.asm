@@ -46,6 +46,7 @@ scorethous = $40fa
 bulletcolor = $2055
 objecbuffer = $6c00
 clscount = $4a00
+slowshift = $4a01
 *=$0801
         !byte    $1E, $08, $0A, $00, $9E, $20, $28,  $32, $30, $38, $30, $29, $3a, $8f, $20, $28, $43, $29, $20, $32, $30, $32, $31, $20, $4D, $54, $53, $56, $00, $00, $00
  
@@ -201,12 +202,10 @@ inx
  sta objecbuffer,x
 cpx #10
  bne loadenemiesloop
- 
+
 mainloop
-inc clscount
-lda clscount
-eor clscount
-sta clscount
+ 
+  jsr roring
 
 inc oppbulletchar
 jsr wastetime
@@ -215,15 +214,14 @@ jsr wastetime
 
   jsr collision 
 
-
+jsr displayobjects 
  jsr displaybullet
 
 jsr display 
 
 
-  
  
-jsr displayobjects 
+
  
 
   jsr displayoppbullet
@@ -243,6 +241,8 @@ ror voicefreq
 
 jsr scanjoy
   
+ 
+
 
  
 
@@ -257,6 +257,33 @@ inc charactercolour
 
 jmp mainloop
 rts
+roring
+ldy #0 
+ 
+roringloop
+iny
+   
+   rol $2260 
+ ;  inc $2260 
+rol $2261
+  ;inc $2261
+rol $2262
+ ; inc $2262
+rol $2263 
+ ; inc $2263
+rol $2264
+;  inc $2264
+rol $2265
+;  inc $2265 
+rol $2266
+ ; inc $2266
+rol $2267
+ ; inc $2267
+cpy #$ff
+bne roringloop
+rts
+
+ 
 cls
  
  
@@ -269,8 +296,7 @@ clsloop
 inx
 
 
- 
- iny
+dey
  
  
  lda bgchar 
@@ -286,31 +312,24 @@ sta $d800,y
 sta $d900,y  
 sta $da00,y
 sta $daf0,y
-  
+
  
+ cpy #$00
  
- cpy #$0
  bne clsloop
  
  rts
 
 
 wastetime
-
+ldy #0
  ldx #0
 wastetimeloop
- inx
+ iny
  
  
-ror $2260 
-ror $2261
-ror $2262
-ror $2263 
-ror $2264
-ror $2265
-ror $2266
-ror $2267
- cpx clscount
+ 
+ cpy #$0
  
  bne wastetimeloop
 rts
@@ -705,7 +724,9 @@ sta opposebulletposh
 rts
  
  
+  
  
+
  
 
 displayoppbullet
@@ -747,7 +768,7 @@ cpy #$ff
 bne displayoppbulletloop
  
 rts
- 
+
 
 displayoppbulletpg1
 
@@ -839,31 +860,33 @@ beq safearea
 lda objecbuffer,y 
 cmp bulletpositionl
 beq checkhigh
+
 rts
 checkhigh
- 
+
 lda bulletpositionh
 
 cmp #2
 beq score
 rts
 
+
 displayobjects 
  ldx #2
 ldy #$2
+
+
 objectsloop
 iny 
- 
- 
-
- 
+dex
  
 
 jsr bullettoboxcollision
- 
-lda objecbuffer,y
- 
+ lda objecbuffer,y 
  tax
+
+
+
 cpx #255
 beq bypass
 cpx #0
@@ -881,9 +904,13 @@ sta $d900,x
 sta $d901,x
 sta $d928,x
 sta $d929,x
+ 
+ 
+  
 
-
- cpy #255
+ 
+ 
+ cpx #255
  
  
  bne objectsloop
@@ -891,7 +918,7 @@ sta $d929,x
 bypass
 
 rts
- 
+
 
 showgameover 
 
@@ -941,8 +968,11 @@ cmp positionh
 beq showgameover
 rts 
 display 
+ldx #$0
+ldy #0
 
-
+displayloop
+inx
 lda positionh
 ldy positionl
 cmp #$01
@@ -953,7 +983,8 @@ cmp #$03
 beq displaypagethree  
 cmp #$04
 beq displaypagefour  
-
+ cpx #$ff
+ bne displayloop
     
 rts 
 displaypageone
@@ -971,7 +1002,7 @@ sta $d800,y
 sta $d801,y
 sta $d828,y
 sta $d829,y
- 
+
 rts
 displaypagetwo
 
@@ -1025,6 +1056,7 @@ sta $db00,y
 sta $db01,y
 sta $db28,y
 sta $db29,y
+
 rts
  
  
