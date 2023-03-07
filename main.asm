@@ -1,5 +1,5 @@
 !cpu 6510
-!to "virtuafly.prg",cbm
+!to "vois.prg",cbm
 ;designed by keyvan mehrbakhsh 2023
 ;keyvanmehrbakhsh@gmail.com
 ;its free to alter 
@@ -46,7 +46,8 @@ scorethous = $40fa
 bulletcolor = $2055
 objecbuffer = $6c00
 clscount = $4a00
-slowshift = $4a01
+currentcell = $03
+slowshift = $02
 *=$0801
         !byte    $1E, $08, $0A, $00, $9E, $20, $28,  $32, $30, $38, $30, $29, $3a, $8f, $20, $28, $43, $29, $20, $32, $30, $32, $31, $20, $4D, $54, $53, $56, $00, $00, $00
  
@@ -123,6 +124,16 @@ lda theship3,y
 sta $2278,y
 lda theship4,y
 sta $2280,y
+
+lda thebox,y
+sta $2288,y
+lda thebox1,y
+sta $2290,y
+lda thebox2,y
+sta $2298,y
+lda thebox3,y
+sta $22a0,y
+
 iny
  
 bne copysomecharactersloop
@@ -173,13 +184,13 @@ lda #76
 sta bgchar 
 lda #2
 sta bgcolor 
-lda #73
+lda #81
 sta objectschar1
-lda #85
+lda #82
 sta objectschar2
-lda #74
+lda #84
 sta objectschar3
-lda #75
+lda #83
 sta objectschar4
 lda #33
 sta bulletchar 
@@ -205,7 +216,7 @@ cpx #10
 
 mainloop
  
-  jsr roring
+ 
 
 inc oppbulletchar
 jsr wastetime
@@ -220,7 +231,7 @@ jsr displayobjects
 jsr display 
 
 
- 
+
 
  
 
@@ -234,10 +245,7 @@ objectsdisplayed
 
 ror voicefreq
  
- inc objectschar1
-  inc objectschar2
-   inc objectschar3
-    inc objectschar4
+ 
 
 jsr scanjoy
   
@@ -256,31 +264,6 @@ inc charactercolour
  
 
 jmp mainloop
-rts
-roring
-ldy #0 
- 
-roringloop
-iny
-   
-   rol $2260 
- ;  inc $2260 
-rol $2261
-  ;inc $2261
-rol $2262
- ; inc $2262
-rol $2263 
- ; inc $2263
-rol $2264
-;  inc $2264
-rol $2265
-;  inc $2265 
-rol $2266
- ; inc $2266
-rol $2267
- ; inc $2267
-cpy #$ff
-bne roringloop
 rts
 
  
@@ -312,7 +295,7 @@ sta $d800,y
 sta $d900,y  
 sta $da00,y
 sta $daf0,y
-
+ 
  
  cpy #$00
  
@@ -323,15 +306,21 @@ sta $daf0,y
 
 wastetime
 ldy #0
- ldx #0
+
 wastetimeloop
- iny
+iny
  
+ lda $0400,y
+  lda $0400,y
+   lda $0400,y
+    lda $0400,y
+     lda $0400,y
+      lda $0400,y
+       lda $0400,y
  
+ cpy #$ff
  
- cpy #$0
- 
- bne wastetimeloop
+bne wastetimeloop
 rts
 
  
@@ -835,23 +824,23 @@ beq score
 rts
 
 score
-
 lda #255
 sta objecbuffer,y
 
+
+ldx #0
+ldy #0
 jsr addscore
-tya 
-cmp #0
-beq showgameover
+
+
 safearea 
- tya
- adc #1 
- tay
+ 
 
 
 
 rts 
-bullettoboxcollision
+
+bullettoboxcollision2
 lda bulletpositionl
 cmp #255
 beq safearea
@@ -875,22 +864,33 @@ displayobjects
  ldx #2
 ldy #$2
 
+ 
+
 
 objectsloop
 iny 
-dex
+inx
+
+
+
+lda objecbuffer,y 
+cmp #255
+beq bypass
+cmp #0
+beq bypass
  
 
-jsr bullettoboxcollision
- lda objecbuffer,y 
- tax
+tax
+
+ 
+ 
+ 
+ 
 
 
 
-cpx #255
-beq bypass
-cpx #0
-beq bypass
+
+jsr bullettoboxcollision2
 lda objectschar1
 sta $0500,x
 lda objectschar2
@@ -904,13 +904,12 @@ sta $d900,x
 sta $d901,x
 sta $d928,x
 sta $d929,x
- 
+
  
   
 
  
  
- cpx #255
  
  
  bne objectsloop
@@ -1089,7 +1088,12 @@ rts
 
  
  
-addscore		clc
+addscore		
+                  
+              
+ 
+
+                 clc
 			    lda #0
 			    ldx #0
 			    ldy #0
@@ -1180,6 +1184,7 @@ printscore
  
 somenum
          !byte     50,75,100,125,150,175,200,225,250,0 
+abitmove   !byte 0,1,2,3,2,1,0
 gameovertex
 
           !scr " gameover message once upon a time there was a lonely something in a lonely something area so you have to move his ass around and maybe do a little of interactions with some other things around to be continued also my name is keyvan mehrbakhsh  " 
@@ -1241,6 +1246,47 @@ theship4
             !byte  %10000000
             !byte  %00000000
             !byte  %00000000
+            
+            
+thebox   !byte    %11111111
+          !byte   %11000000
+          !byte   %10100000
+          !byte   %10010000
+          !byte   %10001111
+          !byte   %10001000
+          !byte   %10001000
+          !byte   %10001000
+          
+thebox1              
+           !byte   %00000000
+           !byte   %10000000
+           !byte   %01000000
+           !byte   %00100000
+           !byte   %11110000
+           !byte   %00010000
+           !byte   %00010000
+           !byte   %00010000
+           
+thebox2              
+           !byte   %00010000
+           !byte   %00010000
+           !byte   %00010000
+           !byte   %11110000
+           !byte   %00000000
+           !byte   %00000000
+           !byte   %00000000
+           !byte   %00000000
+thebox3              
+             
+           !byte   %01001000
+           !byte   %00101000
+           !byte   %00011000
+           !byte   %00001111
+           !byte   %00000000
+           !byte   %00000000
+           !byte   %00000000
+           !byte   %00000000        
+            
          
  !source "sounds.asm"
 
