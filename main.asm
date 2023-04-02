@@ -112,9 +112,9 @@ sta $2266
  lda circle8 
 sta $2267        
 
-copysomecharacters
+copyshipcharacter
 ldy #0
-copysomecharactersloop
+copyshipcharacterloop
 
 lda theship,y
 sta $2268,y
@@ -124,20 +124,12 @@ lda theship3,y
 sta $2278,y
 lda theship4,y
 sta $2280,y
-
-lda thebox,y
-sta $2288,y
-lda thebox1,y
-sta $2290,y
-lda thebox2,y
-sta $2298,y
-lda thebox3,y
-sta $22a0,y
+ 
 
 iny
  
-bne copysomecharactersloop
-
+bne copyshipcharacterloop
+ 
 
 init 
 lda #20
@@ -194,7 +186,7 @@ lda #83
 sta objectschar4
 lda #33
 sta bulletchar 
- 
+ sta bulletcolor
 
 ldx #0
  
@@ -213,6 +205,23 @@ inx
  sta objecbuffer,x
 cpx #10
  bne loadenemiesloop
+copyboxcharacter 
+ldy #0
+copyboxcharacterloop
+
+
+lda thebox,y
+sta $2288,y
+lda thebox1,y
+sta $2290,y
+lda thebox2,y
+sta $2298,y
+lda thebox3,y
+sta $22a0,y
+
+iny
+ 
+bne copyboxcharacterloop
 
 mainloop
  
@@ -245,7 +254,7 @@ objectsdisplayed
 
 ror voicefreq
  
- 
+ ror clscount
 
 jsr scanjoy
   
@@ -262,7 +271,6 @@ inc charactercolour
  
  jsr enemytrigger
  
-
 jmp mainloop
 rts
 
@@ -309,18 +317,15 @@ ldy #0
 
 wastetimeloop
 iny
- 
- lda $0400,y
-  lda $0400,y
-   lda $0400,y
-    lda $0400,y
-     lda $0400,y
-      lda $0400,y
-       lda $0400,y
+ lda $0400,x
+lda $0400,x
+lda $0400,x
+lda $0400,x
+lda $0400,x
  
  cpy #$ff
+ bne wastetimeloop
  
-bne wastetimeloop
 rts
 
  
@@ -372,8 +377,7 @@ sta bulletpositionl
  lda positionh
 sta bulletpositionh
  
-
-  inc bulletcolor
+ 
   jsr lazbeep1 
 
 
@@ -826,10 +830,8 @@ rts
 score
 lda #255
 sta objecbuffer,y
-
-
-ldx #0
-ldy #0
+jsr boxexp
+ 
 jsr addscore
 
 
@@ -839,6 +841,22 @@ safearea
 
 
 rts 
+boxexp
+ldx #0
+boxexploop
+inx 
+ 
+ror $2288,x
+ 
+ror $2290,x
+ 
+ror $2298,x
+ 
+ror $22a0,x
+cpx clscount
+bne boxexploop
+rts
+
 
 bullettoboxcollision2
 lda bulletpositionl
@@ -1081,6 +1099,7 @@ cpy #3
 beq backtostart
 cpy #7
 beq backtostart
+ 
  rts
 backtostart
 jsr loadenemies
