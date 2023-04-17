@@ -224,7 +224,8 @@ iny
 bne copyboxcharacterloop
 
 mainloop
- 
+
+
  
 
 inc oppbulletchar
@@ -260,8 +261,6 @@ jsr scanjoy
   
  
 
-
- 
 
 jsr movejoy
 
@@ -317,11 +316,17 @@ ldy #0
 
 wastetimeloop
 iny
+inx
  lda $0400,x
 lda $0400,x
 lda $0400,x
 lda $0400,x
 lda $0400,x
+lda $0400,x
+lda $0400,x
+
+inc clscount
+
  
  cpy #$ff
  bne wastetimeloop
@@ -842,18 +847,21 @@ safearea
 
 rts 
 boxexp
-ldx #0
+ldy #0
 boxexploop
-inx 
+
  
-ror $2288,x
- 
-ror $2290,x
- 
-ror $2298,x
- 
-ror $22a0,x
-cpx clscount
+
+lda thejack,y
+sta $2288,y
+lda thejack1,y
+sta $2290,y
+lda thejack2,y
+sta $2298,y
+lda thejack3,y
+sta $22a0,y
+
+iny
 bne boxexploop
 rts
 
@@ -879,8 +887,8 @@ rts
 
 
 displayobjects 
- ldx #2
-ldy #$2
+ ldx #0
+ldy #$0
 
  
 
@@ -888,10 +896,12 @@ ldy #$2
 objectsloop
 iny 
 inx
-
-
-
+lda objecbuffer,x 
+adc #1
+sta objecbuffer,x
+ 
 lda objecbuffer,y 
+
 cmp #255
 beq bypass
 cmp #0
@@ -929,7 +939,7 @@ sta $d929,x
  
  
  
- 
+ cpy #$ff
  bne objectsloop
  
 bypass
@@ -1202,7 +1212,7 @@ printscore
 				rts
  
 somenum
-         !byte     50,75,100,125,150,175,200,225,250,0 
+         !byte     0,0,0,0,0,0,0,0,0,0 
 abitmove   !byte 0,1,2,3,2,1,0
 gameovertex
 
@@ -1306,6 +1316,47 @@ thebox3
            !byte   %00000000
            !byte   %00000000        
             
-         
+              
+thejack  !byte    %00000000
+          !byte   %00000000
+          !byte   %00000000
+          !byte   %00000111
+          !byte   %00011000
+          !byte   %00100000
+          !byte   %01100110
+          !byte   %01100110
+          
+thejack1              
+          !byte   %00000000
+          !byte   %00000000
+          !byte   %00000000
+          !byte   %11100000
+          !byte   %00011000
+          !byte   %00000100
+          !byte   %01100110
+          !byte   %01100110
+
+thejack2              
+             
+          !byte   %00000110
+          !byte   %11100110
+          !byte   %11001100
+          !byte   %00110000
+          !byte   %11000000
+          !byte   %00000000
+          !byte   %00000000
+          !byte   %00000000    
+thejack3              
+          !byte   %01100000
+          !byte   %01100111
+          !byte   %00110011
+          !byte   %00001100
+          !byte   %00000011
+          !byte   %00000000
+          !byte   %00000000
+          !byte   %00000000
+
+
+                   
  !source "sounds.asm"
 
