@@ -190,7 +190,38 @@ sta bulletchar
 
 ldx #0
  
+startscreen
 
+jsr cls
+ldy #0
+
+startscreenloop
+
+
+lda startuptext,y
+ 
+iny
+sta $0550,y
+lda #3
+sta $d950,y
+cpy #$4
+bne startscreenloop 
+ldy #0
+startscreenloop2 
+
+lda startuptext2,y
+iny
+sta $0750,y
+lda #3
+sta $db50,y
+cpy #$16
+bne startscreenloop2   
+lda $dc00
+cmp #$6f
+bne startscreen
+cmp #$6f
+beq loadenemies
+rts
 loadenemies 
  
  
@@ -222,6 +253,8 @@ sta $22a0,y
 iny
  
 bne copyboxcharacterloop
+
+
 
 mainloop
 
@@ -273,7 +306,6 @@ inc charactercolour
 jmp mainloop
 rts
 
- 
 cls
  
  
@@ -950,33 +982,37 @@ rts
 showgameover 
 
 jsr expnoz2
- 
+showgameover2 
+jsr smiley
+jsr smiley2
+jsr drawcircle
+jsr lips
 ldy #0
 showgameoverloop
-iny
 
  
 lda gameovertex,y
  
 
-sta $0550,y
-sta $d850,y
-cpy #$f0
+
+sta $0459,y
+lda #3
+sta $d859,y
+iny
+cpy #$13
 bne showgameoverloop
  
 lda $dc00
 cmp #$6f
-bne showgameoverloop 
- 
+bne showgameover2
+lda $dc00
 cmp #$6f
 beq reset
  
 jmp mainloop
 rts
 reset 
-lda #0
-ldx #0
-ldy #0
+
  
 jsr init
 rts
@@ -1214,9 +1250,11 @@ printscore
 somenum
          !byte     0,0,0,0,0,0,0,0,0,0 
 abitmove   !byte 0,1,2,3,2,1,0
+startuptext !scr "vois"
+startuptext2   !scr "keyvan mehrbakhsh 2023"
 gameovertex
 
-          !scr " gameover message once upon a time there was a lonely something in a lonely something area so you have to move his ass around and maybe do a little of interactions with some other things around to be continued also my name is keyvan mehrbakhsh  " 
+          !scr " you hit press fire " 
  
 circle1
  !byte %0000000
@@ -1357,6 +1395,6 @@ thejack3
           !byte   %00000000
 
 
-                   
+  !source "two.asm"                  
  !source "sounds.asm"
 
