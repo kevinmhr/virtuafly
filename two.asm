@@ -86,3 +86,98 @@ jsr smiley2
 jsr drawcircle
 jsr lips
 rts
+display 
+ldx #$0
+ldy #0
+
+displayloop
+inx
+lda positionh
+ldy positionl
+cmp #$01
+beq displaypageone
+cmp #$02
+beq displaypagetwo 
+cmp #$03
+beq displaypagethree  
+cmp #$04
+beq displaypagefour  
+ cpx #$ff
+ bne displayloop
+    
+rts 
+displaypageone
+
+lda character 
+sta $0400,y
+lda character1 
+sta $0401,y
+lda character2 
+sta $0428,y
+lda character3 
+sta $0429,y
+lda charactercolour
+sta $d800,y
+sta $d801,y
+sta $d828,y
+sta $d829,y
+
+rts
+displaypagetwo
+
+lda character 
+sta $0500,y
+lda character1 
+sta $0501,y
+lda character2 
+sta $0528,y
+lda character3 
+sta $0529,y
+lda charactercolour
+sta $d900,y
+sta $d901,y
+sta $d928,y
+sta $d929,y
+ 
+rts
+displaypagefour
+ 
+
+lda character
+sta $0700,y
+lda character1 
+sta $0701,y
+lda character2 
+sta $0728,y
+lda character3 
+sta $0729,y
+lda charactercolour
+sta $db00,y
+sta $db01,y
+sta $db28,y
+sta $db29,y
+
+rts
+
+displaypagethree
+ 
+lda character
+sta $0600,y
+lda character1 
+sta $0601,y
+lda character2 
+sta $0628,y
+lda character3 
+sta $0629,y
+lda charactercolour
+sta $da00,y 
+sta $da01,y
+sta $da28,y
+sta $da29,y
+ 
+rts
+
+
+
+ 
+ 

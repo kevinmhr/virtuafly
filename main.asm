@@ -47,7 +47,10 @@ bulletcolor = $2055
 objecbuffer = $6c00
 clscount = $4a00
 currentcell = $03
-slowshift = $02
+scrollvalue = $37
+scrolltrigger = $38
+positionlbuffer = $39
+positionlbuffer2 = $40
 *=$0801
         !byte    $1E, $08, $0A, $00, $9E, $20, $28,  $32, $30, $38, $30, $29, $3a, $8f, $20, $28, $43, $29, $20, $32, $30, $32, $31, $20, $4D, $54, $53, $56, $00, $00, $00
  
@@ -132,7 +135,7 @@ bne copyshipcharacterloop
  
 
 init 
-lda #20
+lda #26
 sta positionl
 ldx #0
 ldy #0
@@ -141,7 +144,7 @@ lda #0
 sta $d020
 sta $d021
 
-lda #$04
+lda #$03
 sta positionh
 lda #77
 sta character
@@ -258,27 +261,45 @@ bne copyboxcharacterloop
 
 mainloop
 
-
- 
+ldx #0
+jsr collisionoccuredtowalls
 
 inc oppbulletchar
 jsr wastetime
- 
- jsr cls
+
+lda scrollvalue
+sbc positionlbuffer
+sta scrollvalue
+lda scrolltrigger
+cmp #0
+beq somelinedown
+lda scrollvalue
+
+
+adc #26
+
+sta scrollvalue
+somelinedown
+
+
+
+
+jsr cls
 
   jsr collision 
+  
+jsr displayroad 
+jsr display
 
-jsr displayobjects 
  jsr displaybullet
 
-jsr display 
 
+jsr displayoppbullet
 
-
-
+jsr displayobjects 
  
 
-  jsr displayoppbullet
+  
 
  jsr bullettobullet
  jsr printscore
@@ -305,6 +326,8 @@ inc charactercolour
  
 jmp mainloop
 rts
+
+
 
 cls
  
@@ -344,12 +367,17 @@ sta $daf0,y
 
 
 wastetime
-ldy #0
+ldx #0
 
 wastetimeloop
-iny
 inx
+
  lda $0400,x
+lda $0400,x
+lda $0400,x
+lda $0400,x
+lda $0400,x
+lda $0400,x
 lda $0400,x
 lda $0400,x
 lda $0400,x
@@ -360,7 +388,7 @@ lda $0400,x
 inc clscount
 
  
- cpy #$ff
+ cpx #$ff
  bne wastetimeloop
  
 rts
@@ -430,6 +458,7 @@ rts
 
 storekey 
  
+
  sta lastkey
   
     
@@ -479,10 +508,10 @@ left
     sec
     sbc #01
     sta positionl
- 
+    sta positionlbuffer
   bcc counterrecount
-   
- 
+   lda #01
+ sta scrolltrigger
    
      
     rts
@@ -500,10 +529,11 @@ jsr tickingsound
     clc
     adc #01
     sta positionl
-  
+  sta positionlbuffer
   bcs recount
     
-   
+      lda #01
+ sta scrolltrigger
    
     rts
 recount
@@ -522,11 +552,12 @@ down
     clc
     adc #40
     sta positionl
-    
+    sta positionlbuffer
     
     bcs incresehighbyte
  
- 
+    lda #01
+ sta scrolltrigger
  
  
  
@@ -540,12 +571,13 @@ jsr tickingsound
     sec
     sbc #40
     sta positionl
- 
+ sta positionlbuffer
    
  
  bcc decreasehibyte
  
- 
+    lda #01
+ sta scrolltrigger
 rts
 
  
@@ -1030,108 +1062,93 @@ lda opposebulletposh
 cmp positionh
 beq showgameover
 rts 
-display 
-ldx #$0
-ldy #0
+displayroad 
 
-displayloop
+
+
+displayroadloop
+
 inx
-lda positionh
-ldy positionl
-cmp #$01
-beq displaypageone
-cmp #$02
-beq displaypagetwo 
-cmp #$03
-beq displaypagethree  
-cmp #$04
-beq displaypagefour  
- cpx #$ff
- bne displayloop
+lda positionl
+sta positionlbuffer2
+
+lda wallpix,x
+
+adc scrollvalue
+
+;beq collisionoccuredtowalls
+
+tay
+
+
+
+
+
+
+
+
+
+lda #123
+sta $0400,y
+sta $0500,y
+sta $0600,y
+sta $0700,y
+lda #6
+
+sta $d800,y
+sta $d900,y 
+sta $da00,y 
+sta $db00,y
+
+;lda positionh
+;cmp #$01
+;beq displaypageone
+;cmp #$02
+;beq displaypagetwo 
+;cmp #$03
+;beq displaypagethree  
+;cmp #$04
+;sbeq displaypagefour  
+ cpx #71
+bne displayroadloop
     
 rts 
-displaypageone
+collisionoccuredtowalls
 
-lda character 
-sta $0400,y
-lda character1 
-sta $0401,y
-lda character2 
-sta $0428,y
-lda character3 
-sta $0429,y
-lda charactercolour
-sta $d800,y
-sta $d801,y
-sta $d828,y
-sta $d829,y
+inx
 
+lda wallpix,x
+adc scrollvalue
+cmp positionl
+
+
+beq socollisionoccuredtowalls
+
+ cpx #71
+bne collisionoccuredtowalls
 rts
-displaypagetwo
+socollisionoccuredtowalls
+lda #$0
+sta scrolltrigger
+sta positionlbuffer
 
-lda character 
-sta $0500,y
-lda character1 
-sta $0501,y
-lda character2 
-sta $0528,y
-lda character3 
-sta $0529,y
-lda charactercolour
-sta $d900,y
-sta $d901,y
-sta $d928,y
-sta $d929,y
- 
-rts
-displaypagethree
- 
-lda character
-sta $0600,y
-lda character1 
-sta $0601,y
-lda character2 
-sta $0628,y
-lda character3 
-sta $0629,y
-lda charactercolour
-sta $da00,y 
-sta $da01,y
-sta $da28,y
-sta $da29,y
- 
-rts
-
-
-displaypagefour
- 
-
-lda character
-sta $0700,y
-lda character1 
-sta $0701,y
-lda character2 
-sta $0728,y
-lda character3 
-sta $0729,y
-lda charactercolour
-sta $db00,y
-sta $db01,y
-sta $db28,y
-sta $db29,y
 
 rts
  
+
+
+
+
+scorecorrection
+lda scoreones
+cmp #0 
+beq zeroscoreone
+rts
+zeroscoreone
+lda #0 
+sta scoreones
+rts
  
-
- 
-
-
-
-
-
-
-
  
 zeroscore
 lda #0 
@@ -1273,7 +1290,7 @@ circle7
 circle8 
  !byte %0000000
  
-
+wallpix !byte 1,2,3,4,5,6,7,8,9,10,41,42,43,44,45,46,47,48,49,50,81,82,83,84,85,86,87,88,89,90,121,122,123,124,125,126,127,128,129,130,161,162,163,164,165,166,167,168,169,170,201,202,203,204,205,206,207,208,209,210,241,242,243,244,245,246,247,248,249,250
  
 theship   !byte   %00000001
           !byte   %00000001
