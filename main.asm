@@ -267,8 +267,7 @@ mainloop
 
  
 jsr collisionoccuredtowalls
-
-inc oppbulletchar
+ 
 jsr wastetime
 
 lda scrollvalue
@@ -768,8 +767,6 @@ sta $db00,x
  
  rts
 incroppbulletpositionh
-clc
-inc opposebulletposl
  
  
 
@@ -879,7 +876,7 @@ sta $0700,x
 lda #4
 sta $db00,x
  
- clc
+ 
  rts
 
 bullettobullet
@@ -972,7 +969,9 @@ objectsloop
 iny 
 inx
   
-
+lda objecbuffer 
+cmp positionl
+beq jumptogameover
 
 jsr bullettoboxcollision2
 
@@ -987,6 +986,9 @@ tax
 
 
 jsr displayobjecpg1
+rts
+jumptogameover
+jsr showgameover
 rts
 displayobjecpg1
  
