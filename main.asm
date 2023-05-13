@@ -51,6 +51,8 @@ scrollvalue = $37
 scrolltrigger = $38
 positionlbuffer = $39
 positionlbuffer2 = $40
+reversezp = $41
+reversetrigger = $42
 *=$0801
         !byte    $1E, $08, $0A, $00, $9E, $20, $28,  $32, $30, $38, $30, $29, $3a, $8f, $20, $28, $43, $29, $20, $32, $30, $32, $31, $20, $4D, $54, $53, $56, $00, $00, $00
  
@@ -139,11 +141,13 @@ lda #26
 sta positionl
 ldx #0
 ldy #0
-
+lda #41
+sta reversezp
 lda #0
 sta $d020
 sta $d021
-
+lda #38
+sta reversetrigger
 lda #$03
 sta positionh
 lda #77
@@ -261,7 +265,7 @@ bne copyboxcharacterloop
 
 mainloop
 
-ldx #0
+ 
 jsr collisionoccuredtowalls
 
 inc oppbulletchar
@@ -281,14 +285,14 @@ adc #26
 sta scrollvalue
 somelinedown
 
-
-
+ jsr reverse
 
 jsr cls
 
   jsr collision 
   
 jsr displayroad 
+
 jsr display
 
  jsr displaybullet
@@ -296,7 +300,7 @@ jsr display
 
 jsr displayoppbullet
 
-jsr displayobjects 
+ jsr displayobjects 
  
 
   
@@ -307,9 +311,9 @@ jsr displayobjects
  
 objectsdisplayed
 
-ror voicefreq
  
- ror clscount
+ 
+ 
 
 jsr scanjoy
   
@@ -325,6 +329,7 @@ inc charactercolour
  jsr enemytrigger
  
 jmp mainloop
+
 rts
 
 
@@ -373,22 +378,18 @@ wastetimeloop
 inx
 
  lda $0400,x
-lda $0400,x
-lda $0400,x
-lda $0400,x
-lda $0400,x
-lda $0400,x
-lda $0400,x
-lda $0400,x
-lda $0400,x
-lda $0400,x
-lda $0400,x
-lda $0400,x
-
-inc clscount
+  lda $0400,x
+   lda $0400,x
+    lda $0400,x
+     lda $0400,x
+      lda $0400,x
+   
+      
+  
+ 
 
  
- cpx #$ff
+ cpx #255
  bne wastetimeloop
  
 rts
@@ -523,7 +524,6 @@ sta positionl
 rts
 right 
  
- 
 jsr tickingsound
  lda positionl
     clc
@@ -544,7 +544,7 @@ sta positionl
 rts
 
 down
- 
+  
   jsr tickingsound
    
    lda positionl
@@ -796,15 +796,17 @@ displayoppbullet
 
  
  ldy #0
-displayoppbulletloop
 clc
+displayoppbulletloop
+
 inx
 iny
 
  
 
 lda opposebulletposl
-adc #38
+
+adc #40
 
   tax
 stx opposebulletposl
@@ -834,37 +836,37 @@ rts
 
 displayoppbulletpg1
 
-lda oppbulletchar
+lda #90
 sta $0400,x
- sta $0401,x
-lda bulletcolor
+ 
+lda #7
 sta $d800,x
- sta $d801,x
+ 
  
 
 
 rts
 displayoppbulletpg2
  
-lda oppbulletchar
+lda #90
 sta $0500,x
-sta $0501,x
-lda bulletcolor
+ 
+lda #7
 sta $d900,x
-sta $d901,x
+ 
  
 rts
 displayoppbulletpg3
  
  
  
-lda oppbulletchar
+lda #90
 
 sta $0600,x
- sta $0601,x
-lda bulletcolor
+ 
+lda #7
 sta $da00,x
- sta $da01,x
+ 
   
  rts
 
@@ -872,14 +874,14 @@ sta $da00,x
 displayoppbulletpg4
  
 
-lda oppbulletchar
+lda #90
 sta $0700,x
  
- sta $0701,x
-lda bulletcolor
-sta $db00,x
- sta $db01,x
  
+lda #7
+sta $db00,x
+ 
+ clc
  rts
 
 bullettobullet
@@ -897,8 +899,11 @@ beq score
 rts
 
 score
-lda #255
-sta objecbuffer,y
+
+bit objecbuffer 
+ 
+;lda #255
+;sta objecbuffer 
 jsr boxexp
  
 jsr addscore
@@ -936,7 +941,7 @@ cmp #255
 beq safearea
 cmp #0
 beq safearea
-lda objecbuffer,y 
+lda objecbuffer 
 cmp bulletpositionl
 beq checkhigh
 
@@ -944,10 +949,18 @@ rts
 checkhigh
 
 lda bulletpositionh
-
+cmp #3
+beq score
 cmp #2
 beq score
+cmp #1
+beq score
 rts
+
+bypass
+jmp bypass2
+rts
+
 
 
 displayobjects 
@@ -956,34 +969,56 @@ ldy #$0
 
  
 
-
+ clc
 objectsloop
+
 iny 
 inx
-lda objecbuffer,x 
-adc #1
-sta objecbuffer,x
- 
-lda objecbuffer,y 
+  
 
-cmp #255
-beq bypass
+
+
+
+lda objecbuffer 
 cmp #0
 beq bypass
- 
+cmp #255
+beq bypass
+
 
 tax
-
+jsr displayobjecpg1
+rts
+displayobjecpg1
  
- 
- 
- 
-
-
-
-
 jsr bullettoboxcollision2
+ 
+         
 lda objectschar1
+sta $0400,x
+lda objectschar2
+sta $0401,x
+lda objectschar3
+sta $0428,x
+lda objectschar4
+sta $0429,x
+lda charactercolour
+sta $d800,x
+sta $d801,x
+sta $d828,x
+sta $d829,x
+ 
+bcs displayobjecpg2
+ 
+ 
+ clc
+ 
+ 
+displayobjecpg2
+ 
+jsr bullettoboxcollision2
+
+ lda objectschar1
 sta $0500,x
 lda objectschar2
 sta $0501,x
@@ -996,18 +1031,39 @@ sta $d900,x
 sta $d901,x
 sta $d928,x
 sta $d929,x
+ 
+bcs displayobjecpg3
+ clc
+ 
+displayobjecpg3
+ 
+jsr bullettoboxcollision2
+lda objectschar1
+sta $0600,x
+lda objectschar2
+sta $0601,x
+lda objectschar3
+sta $0628,x
+lda objectschar4
+sta $0629,x
+lda charactercolour
+sta $da00,x
+sta $da01,x
+sta $da28,x
+sta $da29,x
+ 
+ 
+ 
 
  
-  
+ 
+ 
+bypass2
 
- 
- 
- 
- cpy #$ff
- bne objectsloop
- 
-bypass
+rts
 
+objectsloopbridge
+jsr objectsloop
 rts
 
 
@@ -1051,6 +1107,9 @@ rts
 
 
 collision
+ 
+
+
 lda opposebulletposl
  
 cmp positionl
@@ -1061,6 +1120,7 @@ forward
 lda opposebulletposh
 cmp positionh
 beq showgameover
+
 rts 
 displayroad 
 
@@ -1117,6 +1177,12 @@ collisionoccuredtowalls
 
 inx
 
+adc scrollvalue
+lda wallpix,x
+adc scrollvalue
+cmp objecbuffer
+beq reversetriggered
+ 
 lda wallpix,x
 adc scrollvalue
 cmp positionl
@@ -1134,10 +1200,26 @@ sta positionlbuffer
 
 
 rts
+reverse
+
+lda objecbuffer
+
+adc reversetrigger
+
+ 
+sta objecbuffer
+
+rts
+reversetriggered
+lda reversetrigger
+eor #254
+ 
  
 
+sta reversetrigger
+ 
 
-
+rts
 
 scorecorrection
 lda scoreones
@@ -1171,8 +1253,12 @@ rts
  
  
 addscore		
-                  
+                 
+                
               
+             
+              
+            
  
 
                  clc
