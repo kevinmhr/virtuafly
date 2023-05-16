@@ -177,7 +177,118 @@ sta $da29,y
  
 rts
 
+incroppbulletpositionh2
+ 
+ 
 
 
+lda opposebulletposh2
+cmp #4
+beq resetopposebulletposh2
+inc opposebulletposh2
+ 
+rts
+resetopposebulletposh2 
+
+lda #1 
+sta opposebulletposh2
+rts
+ 
+
+
+displayoppbullet2
+ 
+
+displayoppbulletloop2
+clc
+inx
+iny
+
+ 
+
+lda opposebulletposl2
+ 
+adc #39
+
+  tax
+ 
+ stx opposebulletposl2
+  bcs incroppbulletpositionh2
+ 
+ stx opposebulletposl2
+ 
+ 
+ 
+ 
+
+
+    ldx opposebulletposl2
+lda opposebulletposh2
+cmp #$01
+beq displayoppbullet2pg1
+cmp #$02
+beq displayoppbullet2pg2
+cmp #$03
+beq displayoppbullet2pg3 
+cmp #$04
+beq displayoppbullet2pg4
+
+  
+cpy #$ff
+bne displayoppbulletloop2
+ 
+rts
+
+ 
+
+displayoppbullet2pg1
+
+lda #70
+sta $0400,x
+ 
+lda #1
+sta $d800,x
+ 
+ 
+
+
+rts
+displayoppbullet2pg2
+ 
+lda #70
+sta $0500,x
+ 
+lda #1
+sta $d900,x
+ 
+ 
+rts
+displayoppbullet2pg3
+ 
+ 
+ 
+lda #70
+
+sta $0600,x
+ 
+lda #1
+sta $da00,x
+ 
+  
+ rts
+
+
+displayoppbullet2pg4
+ 
+
+lda #70
+sta $0700,x
+ 
+ 
+lda #1
+sta $db00,x
+ 
+ 
+ rts
  
  

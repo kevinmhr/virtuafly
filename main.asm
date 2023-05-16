@@ -33,7 +33,9 @@ objectschar4 = $6699
 bulletchar =$6634
 oppbulletchar =$6635
 opposebulletposl = $6249
+opposebulletposl2 = $6252
 opposebulletposh = $6250
+opposebulletposh2 = $6253
 objectspositionh = $29
 objectspositionl = $30
 bulletpositionh = $6848
@@ -193,7 +195,8 @@ lda #83
 sta objectschar4
 lda #33
 sta bulletchar 
- sta bulletcolor
+lda #04
+sta bulletcolor
 
 ldx #0
  
@@ -305,6 +308,8 @@ ldy #$0
  ldx #0
 ldy #$0
 jsr displayoppbullet
+ldy #$0
+jsr displayoppbullet2
  ldx #0
 ldy #$0
  jsr displayobjects 
@@ -387,9 +392,12 @@ inx
    lda $0400,x
     lda $0400,x
      lda $0400,x
-      lda $0400,x
+ 
    
-      
+         lda $0400,x
+    lda $0400,x
+     lda $0400,x
+      lda $0400,x
   
  
 
@@ -705,8 +713,6 @@ cmp #$04
 beq displaybulletpg4
 
  
-cpy #$80
-bne displaybulletloop
  
  
 returntomain
@@ -788,7 +794,6 @@ rts
  
 
  
-
 displayoppbullet
  
 
@@ -800,15 +805,19 @@ iny
  
 
 lda opposebulletposl
-
+ 
 adc #40
 
   tax
+ 
  stx opposebulletposl
   bcs incroppbulletpositionh
+ 
  stx opposebulletposl
  
-
+ 
+ 
+oppbulllab
 
 
     ldx opposebulletposl
@@ -895,7 +904,7 @@ rts
 
 score
 
-bit objecbuffer 
+inc objecbuffer 
  
 ;lda #255
 ;sta objecbuffer 
@@ -953,7 +962,7 @@ beq score
 rts
 
 bypass
-jmp bypass2
+ 
 rts
 
 
@@ -969,9 +978,9 @@ objectsloop
 iny 
 inx
   
-lda objecbuffer 
-cmp positionl
-beq jumptogameover
+;lda objecbuffer 
+;cmp positionl
+;beq jumptogameover
 
 jsr bullettoboxcollision2
 
@@ -1075,7 +1084,6 @@ sta $db01,x
  clc
   
  
-bypass2
 
 rts
 
@@ -1132,6 +1140,10 @@ lda opposebulletposl
 cmp positionl
 beq forward
 
+lda opposebulletposl2
+ 
+cmp positionl
+beq forward
 rts 
 forward 
 lda opposebulletposh
@@ -1220,26 +1232,51 @@ rts
 reverse
  
 lda objecbuffer
+sbc scrollvalue
+cmp wallpix,x
 
+  beq reverse2
 adc reversetrigger
  
- 
+revlable
  
 sta objecbuffer
+ 
+ 
+ 
+rts
+reverse2
+sbc reversetrigger
 
+
+jsr revlable
+ 
 rts
 reversetriggered
-lda #1
-adc reversetrigger
-eor #254
  
+lda #1
+
+adc reversetrigger
+sbc scrollvalue
+cmp wallpix,x
+beq reversetrigger2
+eor #254
+
+revlable2
  
 
 sta reversetrigger
  
 
 rts
-
+reversetrigger2
+clc
+ 
+ 
+eor #2
+jsr revlable2 
+rts
+ 
 scorecorrection
 lda scoreones
 cmp #0 
