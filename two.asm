@@ -206,9 +206,10 @@ iny
 
  
 
-lda opposebulletposl2
- 
-adc #39
+ldx opposebulletposl2
+ txa
+adc #1
+ eor #254
 
   tax
  
@@ -216,7 +217,6 @@ adc #39
   bcs incroppbulletpositionh2
  
  stx opposebulletposl2
- 
  
  
  
@@ -234,12 +234,17 @@ cmp #$04
 beq displayoppbullet2pg4
 
   
-cpy #$ff
-bne displayoppbulletloop2
  
 rts
+checkpositionh
+lda positionh
+cmp opposebulletposh2
+beq gameoverbridge
+rts
+gameoverbridge
+jsr showgameover
+rts
 
- 
 
 displayoppbullet2pg1
 

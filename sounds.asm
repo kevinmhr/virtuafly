@@ -75,9 +75,9 @@ tickingsound
          lda #15        ; 15
          sta volume
       
-         lda voicefreq; 12
+         lda #130; 12
          sta hifreq
-         lda positionl       ; 8
+         lda #130      ; 8
          sta lofreq
          lda 15      ; 32 saw
          sta wavefm
@@ -87,18 +87,18 @@ tickingsound
          
 lazbeep1
          jsr soundend1
-         lda #%00000111 ; 0 9
+         lda #%00000011 ; 0 9
          sta attdec
          lda #%00001000 ; 0 0
          sta susrel
          lda #15        ; 15
          sta volume
       
-         lda voicefreq; 12
+         lda #60; 12
          sta hifreq
-          lda voicefreq
+          lda #10
          sta lofreq
-         lda #%00010100       ; 32 saw
+         lda #%00010000       ; 32 saw
          sta wavefm
 
          jsr soundgo1
@@ -114,7 +114,7 @@ lazbeep2
          sta volume
          lda #13        ; 13
          sta hifreq
-         lda $9001         ; 9 bit higher
+         lda #100         ; 9 bit higher
          sta lofreq
          lda #128      ; 32 saw
          sta wavefm
@@ -131,9 +131,9 @@ lazbeep3
          sta volume
          
         
-        lda positionl; 13
+        lda #30; 13
          sta hifreq
-         lda positionl   ; 9 bit higher
+         lda #20   ; 9 bit higher
         
         
          sta lofreq
@@ -146,7 +146,7 @@ lazbeep3
 expnoz
          jsr soundend3
          
-         lda #%00000111 ; 1 9
+         lda #%00000100 ; 1 9
          sta attdec
          lda #%00000011 ; 0 0
          sta susrel
@@ -164,9 +164,9 @@ expnoz
 expnoz2
          jsr soundend3
          
-         lda #%00001011 ; 1 9
+         lda #%00000111 ; 1 9
          sta attdec
-         lda #%00001011 ; 0 0
+         lda #%00000011 ; 0 0
          sta susrel
          lda #15        ; 15
          sta volume
@@ -174,7 +174,7 @@ expnoz2
          sta hifreq
          lda #$25 ; 16
          sta lofreq
-         lda #128 ; 128 noise
+         lda #15 ; 128 noise
          sta wavefm
 
          jsr soundgo3

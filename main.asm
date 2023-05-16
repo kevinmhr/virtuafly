@@ -46,7 +46,7 @@ voicefreq = $31
 scorehunds = $40fd
 scorethous = $40fa 
 bulletcolor = $2055
-objecbuffer = $6c00
+;objecbuffer = $6c00
 clscount = $4a00
 currentcell = $03
 scrollvalue = $37
@@ -181,7 +181,12 @@ lda positionl
  sta opposebulletposl
   lda #$01
  sta opposebulletposh
-lda #76
+     lda #$44
+ sta opposebulletposl2
+  lda #$01
+ sta opposebulletposh2
+ 
+ lda #76
 sta bgchar 
 lda #2
 sta bgcolor 
@@ -334,7 +339,7 @@ jsr scanjoy
 
 jsr movejoy
 
-
+ 
 
 inc charactercolour
  
@@ -804,17 +809,16 @@ iny
 
  
 
-lda opposebulletposl
- 
+ldx opposebulletposl
+ txa
 adc #40
-
-  tax
+ 
+tax
  
  stx opposebulletposl
   bcs incroppbulletpositionh
  
  stx opposebulletposl
- 
  
  
 oppbulllab
@@ -833,10 +837,12 @@ beq displayoppbulletpg4
 
   
 cpy #$ff
-bne displayoppbulletloop
+beq displayoppbulletloopbridge
  
 rts
-
+displayoppbulletloopbridge
+jsr displayoppbulletloop
+rts
 
 displayoppbulletpg1
 
@@ -847,7 +853,7 @@ lda #4
 sta $d800,x
  
  
-
+ 
 
 rts
 displayoppbulletpg2
@@ -925,6 +931,7 @@ boxexploop
 
  
 
+ 
 lda thejack,y
 sta $2288,y
 lda thejack1,y
@@ -999,6 +1006,8 @@ rts
 jumptogameover
 jsr showgameover
 rts
+
+ 
 displayobjecpg1
  
 
@@ -1018,11 +1027,15 @@ sta $d801,x
 sta $d828,x
 sta $d829,x
  
-bcs displayobjecpg2
+ 
+ 
+ 
+ bcs displayobjecpg2
  
  
  clc
  
+
  
 displayobjecpg2
  
@@ -1044,6 +1057,8 @@ sta $d929,x
  
 bcs displayobjecpg3
  clc
+
+
  
 displayobjecpg3
  
@@ -1062,9 +1077,10 @@ sta $da01,x
 sta $da28,x
 sta $da29,x
  
-  
 bcs displayobjecpg4
  clc
+
+
  
 displayobjecpg4
  
@@ -1080,14 +1096,28 @@ sta $0729,x
 lda charactercolour
 sta $db00,x
 sta $db01,x
- bcs objectsloopbridge
+ 
+cpy #$ff
+beq objectsloopbridge
  clc
   
- 
 
 rts
 
 objectsloopbridge
+lda $0400,x
+
+lda $0400,x
+lda $0400,x
+lda $0400,x
+lda $0400,x
+lda $0400,x
+lda $0400,x
+lda $0400,x
+lda $0400,x
+lda $0400,x
+
+
 jmp objectsloop
 rts
 
@@ -1134,22 +1164,35 @@ rts
 collision
  
 
-
+lda opposebulletposl
+sbc #1  
+cmp positionl
+beq forward
 lda opposebulletposl
  
 cmp positionl
 beq forward
 
 lda opposebulletposl2
+sbc #1
+cmp positionl
+beq forward2
+ 
+lda opposebulletposl2
  
 cmp positionl
-beq forward
+beq forward2
 rts 
 forward 
 lda opposebulletposh
 cmp positionh
 beq showgameover
+rts
+forward2
 
+lda opposebulletposh2
+cmp positionh
+beq showgameover
 rts 
 displayroad 
 
@@ -1232,8 +1275,8 @@ rts
 reverse
  
 lda objecbuffer
-sbc scrollvalue
-cmp wallpix,x
+ 
+cmp #$80
 
   beq reverse2
 adc reversetrigger
@@ -1246,6 +1289,8 @@ sta objecbuffer
  
 rts
 reverse2
+
+
 sbc reversetrigger
 
 
@@ -1254,10 +1299,10 @@ jsr revlable
 rts
 reversetriggered
  
-lda #1
+ 
 
 adc reversetrigger
-sbc scrollvalue
+ 
 cmp wallpix,x
 beq reversetrigger2
 eor #254
@@ -1273,7 +1318,7 @@ reversetrigger2
 clc
  
  
-eor #2
+adc #254
 jsr revlable2 
 rts
  
@@ -1305,17 +1350,15 @@ beq backtostart
 backtostart
 jsr loadenemies
 rts
-
- 
  
 addscore		
                  
                 
               
              
-              
-            
- 
+             
+            inc bgcolor
+               
 
                  clc
 			    lda #0
@@ -1324,8 +1367,6 @@ addscore
 				jsr expnoz
 				inc scoreones
 			 
-			   inc bgcolor
-              
                
 			 
 				lda scoreones
@@ -1342,8 +1383,9 @@ addscore
 				rts
 
 addtens			 
-               
-                
+              
+            
+               inc $d021
                 inc scoretens
 			
 				lda #00
@@ -1414,7 +1456,8 @@ startuptext2   !scr "keyvan mehrbakhsh 2023"
 gameovertex
 
           !scr " you hit press fire " 
- 
+objecbuffer
+         !byte     0,0,0,0,0,0,0,0,0,0 
 circle1
  !byte %0000000
 circle2 
