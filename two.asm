@@ -251,7 +251,7 @@ displayoppbullet2pg1
 lda #70
 sta $0400,x
  
-lda #1
+lda opposebulletcolor
 sta $d800,x
  
  
@@ -263,7 +263,7 @@ displayoppbullet2pg2
 lda #70
 sta $0500,x
  
-lda #1
+lda opposebulletcolor
 sta $d900,x
  
  
@@ -276,7 +276,7 @@ lda #70
 
 sta $0600,x
  
-lda #1
+lda opposebulletcolor
 sta $da00,x
  
   
@@ -290,7 +290,7 @@ lda #70
 sta $0700,x
  
  
-lda #1
+lda opposebulletcolor
 sta $db00,x
  
  
