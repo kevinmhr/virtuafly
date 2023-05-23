@@ -299,7 +299,8 @@ ldy #$0
 jsr cls
  ldx #0
 ldy #$0
-  jsr collision 
+ jsr reverse
+ jsr collision 
    ldx #0
 ldy #$0
 jsr displayroad 
@@ -1222,15 +1223,23 @@ bne displayroadloop
 rts 
 collisionoccuredtowalls
 
+ 
 inx
-jsr reverse
+
 lda objecbuffer
-sbc scrollvalue
+adc scrollvalue
 cmp wallpix,x
 
 
 beq reversetriggered
+
+
+lda objecbuffer
+adc scrollvalue
+eor #255
+cmp wallpix,x
  
+beq reversetrigger2
 lda wallpix,x
 adc scrollvalue
 cmp positionl
@@ -1242,16 +1251,19 @@ beq socollisionoccuredtowalls
 bne collisionoccuredtowalls
 rts
 socollisionoccuredtowalls
+
 lda #$0
 sta scrolltrigger
 sta positionlbuffer
 
 
 rts
+
+
 reverse
  clc
 lda objecbuffer
-  
+  adc scrollvalue
  cmp wallpix,x
  
 
@@ -1266,25 +1278,27 @@ sta objecbuffer
  
 rts
 reverse2
-sec
+ 
 lda objecbuffer
+  adc scrollvalue
+ 
 sbc reversetrigger
  bcc decobjecthibyte
- sta objecbuffer
+ 
 
  
 rts
 reversetriggered
  
+  
+ 
+ lda objecbuffer
  
 
-lda reversetrigger
- 
-;cmp wallpix,x
-;beq reversetrigger2
 eor #254
- 
  bcs incobjecthibyte
+ sta reversetrigger
+ 
 revlable2
  
 
@@ -1294,10 +1308,13 @@ sta reversetrigger
 rts
 reversetrigger2
  
+
+eor #255
+
+  bcc decobjecthibyte
+ sta reversetrigger
  
-eor #1 
  
- jsr revlable2
  
 rts
  
