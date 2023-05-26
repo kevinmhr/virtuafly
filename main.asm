@@ -274,9 +274,13 @@ bne copyboxcharacterloop
 
 
 mainloop
-
- 
-jsr collisionoccuredtowalls
+  jsr displayobjects 
+ ldx #0
+ldy #$0
+jsr collisionforship
+ ldx #0
+ldy #$0
+jsr collisionforflyingobj
  
 jsr wastetime
 
@@ -318,10 +322,9 @@ ldy #$0
 jsr displayoppbullet2
  ldx #0
 ldy #$0
- jsr displayobjects 
- 
-  
 
+
+ 
  jsr bullettobullet
  jsr printscore
 
@@ -390,25 +393,9 @@ wastetime
 ldx #0
 
 wastetimeloop
-inx
-
- lda $0400,x
-  lda $0400,x
-   lda $0400,x
-    lda $0400,x
-     lda $0400,x
  
-   
-         lda $0400,x
-    lda $0400,x
-     lda $0400,x
-      lda $0400,x
-  
- 
-
- 
- cpx #255
- bne wastetimeloop
+  cpx #0
+bne wastetimeloop
  
 rts
 
@@ -943,9 +930,9 @@ cmp #1
 beq score
 rts
 
-bypass
+
  
-rts
+ 
  
 
 displayobjects 
@@ -957,8 +944,7 @@ objectsloop
 
 iny 
  
- 
-  
+
 ;lda objecbuffer 
 ;cmp positionl
 ;beq jumptogameover
@@ -983,7 +969,7 @@ cmp #3
 beq displayobjecpg3
 cmp #4
 beq displayobjecpg4
- 
+bypass
 rts
 jumptogameover
 jsr showgameover
@@ -1177,25 +1163,17 @@ displayroad
 displayroadloop
 
 inx
-lda positionl
-sta positionlbuffer2
+
 
 lda wallpix,x
-
+ cmp #255
+ beq bypass3
 adc scrollvalue
 
 ;beq collisionoccuredtowalls
 
 tay
-
-
-
-
-
-
-
-
-
+ 
 lda #123
 sta $0400,y
 sta $0500,y
@@ -1217,11 +1195,37 @@ sta $db00,y
 ;beq displaypagethree  
 ;cmp #$04
 ;sbeq displaypagefour  
- cpx #71
-bne displayroadloop
-    
+
+ cpx #255
+
+ bne displayroadloop
+bypass3 
 rts 
-collisionoccuredtowalls
+collisionforship
+
+iny
+ 
+inx
+
+lda wallpix,x
+
+adc scrollvalue
+cmp positionl
+
+beq soshipcollisionoccured 
+
+ cpy #255
+bne collisionforship
+rts
+soshipcollisionoccured
+
+lda #$0
+sta scrolltrigger
+sta positionlbuffer
+ 
+
+rts
+collisionforflyingobj
 
  
 inx
@@ -1240,54 +1244,28 @@ eor #255
 cmp wallpix,x
  
 beq reversetrigger2
-lda wallpix,x
-adc scrollvalue
-cmp positionl
 
-
-beq socollisionoccuredtowalls
-
- cpx #71
-bne collisionoccuredtowalls
-rts
-socollisionoccuredtowalls
-
-lda #$0
-sta scrolltrigger
-sta positionlbuffer
-
-
+ cpx #255
+bne collisionforflyingobj
 rts
 
 
 reverse
- clc
-lda objecbuffer
-  adc scrollvalue
- cmp wallpix,x
+ 
+reverseloop
  
 
-  beq reverse2
+clc
+ 
+ 
+lda objecbuffer
  adc reversetrigger
  
-revlable
  
 sta objecbuffer
  
+ rts
  
- 
-rts
-reverse2
- 
-lda objecbuffer
-  adc scrollvalue
- 
-sbc reversetrigger
- bcc decobjecthibyte
- 
-
- 
-rts
 reversetriggered
  
   
@@ -1509,7 +1487,7 @@ circle7
 circle8 
  !byte %0000000
  
-wallpix !byte 1,2,3,4,5,6,7,8,9,10,41,42,43,44,45,46,47,48,49,50,81,82,83,84,85,86,87,88,89,90,121,122,123,124,125,126,127,128,129,130,161,162,163,164,165,166,167,168,169,170,201,202,203,204,205,206,207,208,209,210,241,242,243,244,245,246,247,248,249,250
+wallpix !byte 0,1,2,3,4,5,6,7,8,9,10,41,42,43,44,45,46,47,48,49,50,81,82,83,84,85,86,87,88,89,90,121,122,123,124,125,126,127,128,129,130,161,162,163,164,165,166,167,168,169,170,201,202,203,204,205,206,207,208,209,210,241,242,243,244,245,246,247,248,249,250,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255, 255,255,255,255,255,255,255,255,255,255, 255,255,255,255,255,255,255,255,255,255, 255,255,255,255,255,255,255,255,255,255, 255,255,255,255,255,255,255,255,255,255, 255,255,255,255,255,255,255,255,255,255, 255,255,255,255,255,255,255,255,255,255, 255,255,255,255,255,255,255,255,255,255, 255,255,255,255,255,255,255,255,255,255, 255,255,255,255,255,255,255,255,255,255, 255,255,255,255,255,255,255,255,255,255, 255,255,255,255,255,255,255,255,255,255, 255,255,255,255,255,255,255,255,255,255, 255,255,255,255,255,255,255,255,255,255, 255,255,255,255,255,255,255,255,255,255, 255,255,255,255,255,255,255,255,255,255, 255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255  
  
 theship   !byte   %00000001
           !byte   %00000001
