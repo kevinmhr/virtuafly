@@ -274,7 +274,7 @@ bne copyboxcharacterloop
 
 
 mainloop
-  jsr displayobjects 
+ 
  ldx #0
 ldy #$0
 jsr collisionforship
@@ -303,6 +303,7 @@ ldy #$0
 jsr cls
  ldx #0
 ldy #$0
+ jsr displayobjects 
  jsr reverse
  jsr collision 
    ldx #0
@@ -333,7 +334,7 @@ objectsdisplayed
 
  
  
- 
+inc clscount
 
 jsr scanjoy
   
@@ -874,10 +875,13 @@ score
 
 inc objecbuffer 
  
-;lda #255
+lda objecbuffer
+cmp clscount
 ;sta objecbuffer 
-jsr boxexp
- 
+beq boxexp
+adc #128 
+cmp clscount
+beq butterflyload
 jsr addscore
 
 
@@ -887,11 +891,25 @@ safearea
 
 
 rts 
+
+butterflyload
+ldy #0
+butterflyloadloop
+lda thebuttfly1,y
+sta $2288,y
+lda thebuttfly2,y
+sta $2290,y
+lda thebuttfly3,y
+sta $2298,y
+lda thebuttfly4,y
+sta $22a0,y 
+iny
+bne butterflyloadloop
+rts
+
 boxexp
 ldy #0
 boxexploop
-
- 
 
  
 lda thejack,y
@@ -1226,7 +1244,7 @@ sta positionlbuffer
 
 rts
 collisionforflyingobj
-
+ 
  
 inx
 
@@ -1239,6 +1257,7 @@ beq reversetriggered
 
 
 lda objecbuffer
+
 adc scrollvalue
 eor #255
 cmp wallpix,x
@@ -1254,8 +1273,6 @@ reverse
  
 reverseloop
  
-
-clc
  
  
 lda objecbuffer
@@ -1269,12 +1286,13 @@ sta objecbuffer
 reversetriggered
  
   
- 
- lda objecbuffer
+lda reversetrigger
  
 
-eor #254
+eor #255
+ 
  bcs incobjecthibyte
+ 
  sta reversetrigger
  
 revlable2
@@ -1285,11 +1303,14 @@ sta reversetrigger
 
 rts
 reversetrigger2
+sec
+  lda reversetrigger
+sbc #39
+ sta reversetrigger
  
 
-eor #255
-
   bcc decobjecthibyte
+  
  sta reversetrigger
  
  
@@ -1300,7 +1321,7 @@ rts
  
  
 decobjecthibyte
-sec
+ 
 lda objectspositionh
 sbc #1
  
@@ -1324,6 +1345,7 @@ beq objecthighreset
  
 rts
 objecthighreset
+
 lda #1
 sta objectspositionh
  
@@ -1504,9 +1526,9 @@ theship2
            !byte   %00000011
            !byte   %11111111
            !byte   %00000111
-           !byte   %00000001
-           !byte   %00000000
-           !byte   %00000000
+           !byte   %00001111
+           !byte   %00011001
+           !byte   %01100001
            
 theship3              
             !byte  %10000000
@@ -1524,9 +1546,9 @@ theship4
             !byte  %11000000
             !byte  %11111111
             !byte  %11100000
-            !byte  %10000000
-            !byte  %00000000
-            !byte  %00000000
+            !byte  %11110000
+            !byte  %10011000
+            !byte  %10000110
             
             
 thebox   !byte    %11111111
@@ -1535,8 +1557,8 @@ thebox   !byte    %11111111
           !byte   %10010000
           !byte   %10001111
           !byte   %10001000
-          !byte   %10001000
-          !byte   %10001000
+          !byte   %10001001
+          !byte   %10001011
           
 thebox1              
            !byte   %00000000
@@ -1545,12 +1567,12 @@ thebox1
            !byte   %00100000
            !byte   %11110000
            !byte   %00010000
-           !byte   %00010000
-           !byte   %00010000
+           !byte   %10010000
+           !byte   %11010000
            
 thebox2              
-           !byte   %00010000
-           !byte   %00010000
+           !byte   %11010000
+           !byte   %10010000
            !byte   %00010000
            !byte   %11110000
            !byte   %00000000
@@ -1559,52 +1581,92 @@ thebox2
            !byte   %00000000
 thebox3              
              
-           !byte   %01001000
-           !byte   %00101000
+           !byte   %01001011
+           !byte   %00101001
            !byte   %00011000
            !byte   %00001111
            !byte   %00000000
            !byte   %00000000
            !byte   %00000000
-           !byte   %00000000        
+           !byte   %00000000  
+
+           
+thebuttfly1 !byte  %11110000
+          !byte   %01111110
+          !byte   %00110111
+          !byte   %00010111
+          !byte   %00001111
+          !byte   %00000011
+          !byte   %00000111
+          !byte   %00011111
+          
+thebuttfly2             
+           !byte   %00001111
+           !byte   %01111110
+           !byte   %11101100
+           !byte   %11101000
+           !byte   %11110000
+           !byte   %11000000
+           !byte   %11100000
+           !byte   %11111000
+           
+thebuttfly3               
+           !byte   %11110000
+           !byte   %11111000
+           !byte   %01111000
+           !byte   %00010000
+           !byte   %00001000
+           !byte   %00101000
+           !byte   %00010000
+           !byte   %00000000
+thebuttfly4               
+             
+           !byte   %00001111
+           !byte   %00011111
+           !byte   %00011110
+           !byte   %00001000
+           !byte   %00010000
+           !byte   %00010100
+           !byte   %00001000
+           !byte   %00000000  
             
               
 thejack  !byte    %00000000
           !byte   %00000000
-          !byte   %00000000
           !byte   %00000111
-          !byte   %00011000
-          !byte   %00100000
-          !byte   %01100110
-          !byte   %01100110
+          !byte   %00011111
+          !byte   %00111000
+          !byte   %11100000
+          !byte   %11100110
+          !byte   %11100110
           
 thejack1              
           !byte   %00000000
           !byte   %00000000
-          !byte   %00000000
           !byte   %11100000
-          !byte   %00011000
-          !byte   %00000100
-          !byte   %01100110
-          !byte   %01100110
+          !byte   %11111000
+          !byte   %00011100
+          !byte   %00000111
+          !byte   %01100111
+          !byte   %01100111
 
 thejack2              
              
-          !byte   %00000110
-          !byte   %11100110
-          !byte   %11001100
-          !byte   %00110000
-          !byte   %11000000
-          !byte   %00000000
+          !byte   %00000111
+          !byte   %11100111
+          !byte   %11001110
+          !byte   %00011100
+          !byte   %11111000
+          !byte   %11100000
           !byte   %00000000
           !byte   %00000000    
 thejack3              
-          !byte   %01100000
-          !byte   %01100111
-          !byte   %00110011
-          !byte   %00001100
-          !byte   %00000011
-          !byte   %00000000
+          !byte   %11100000
+          !byte   %11100111
+          !byte   %01110011
+          !byte   %00111000
+          !byte   %00011111
+          !byte   %00000111
           !byte   %00000000
           !byte   %00000000
 
