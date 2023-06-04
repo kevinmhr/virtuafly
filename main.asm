@@ -149,8 +149,10 @@ sta reversezp
 lda #0
 sta $d020
 sta $d021
-lda #38
+lda #40
 sta reversetrigger
+lda #1
+sta objecbuffer
 lda #$03
 sta positionh
 lda #77
@@ -301,10 +303,19 @@ somelinedown
  ldx #0
 ldy #$0
 jsr cls
+ 
+ ldx objecbuffer
+
+ txa
+ adc reversetrigger
+ tax
+ stx objecbuffer
+ 
+ 
  ldx #0
 ldy #$0
  jsr displayobjects 
- jsr reverse
+ 
  jsr collision 
    ldx #0
 ldy #$0
@@ -951,26 +962,123 @@ rts
 
  
  
+decobjecthibyte
+ sec
+lda objectspositionh
+sbc #1
+ 
+ 
+cmp #00
+ beq objecthighresethi
+ sta objectspositionh
+ 
+ 
+ rts
+incobjecthibyte 
+ clc
+lda objectspositionh
+cmp #4
+beq objecthighreset
+inc objectspositionh
+ 
+ 
+rts 
  
 
+objecthighreset
+
+ldx #1
+stx objectspositionh
+ 
+rts
+objecthighresethi
+lda #4
+sta objectspositionh
+ 
+rts 
+collisionforflyingobj
+ 
+inx
+ 
+lda objecbuffer
+ adc scrollvalue
+
+cmp wallpix,x
+
+
+beq reversetriggered
+ 
+
+
+ 
+ cpx #255
+bne collisionforflyingobj 
+
+rts
+
+ 
+ 
+reversetriggered
+ 
+
+ 
+ldx reversetrigger
+ 
+txa
+eor #255
+ 
+ tax
+ 
+ 
+ stx reversetrigger
+
+rts
+
+revlable2
+ 
+
+rts
 displayobjects 
 
 
 
- clc
+ 
 objectsloop
-
+ 
+inx  
 iny 
  
+
 
 ;lda objecbuffer 
 ;cmp positionl
 ;beq jumptogameover
 
 jsr bullettoboxcollision2
+ 
+
+ 
+ clc
+
+ldx objecbuffer
+
+txa
+ 
+adc #50
+tax
+bcs incobjecthibyte
+
+sec
+
+ldx objecbuffer
+txa
+sbc #50
+tax
+bcc decobjecthibyte
 
 
-
+ ;bcs incobjecthibyte
+ 
 
  lda objecbuffer 
 cmp #0
@@ -987,6 +1095,9 @@ cmp #3
 beq displayobjecpg3
 cmp #4
 beq displayobjecpg4
+
+cpy #255
+;bne objectsloop
 bypass
 rts
 jumptogameover
@@ -1084,22 +1195,7 @@ sta $db01,x
 
 rts
 
-objectsloopbridge
-lda $0400,x
-
-lda $0400,x
-lda $0400,x
-lda $0400,x
-lda $0400,x
-lda $0400,x
-lda $0400,x
-lda $0400,x
-lda $0400,x
-lda $0400,x
-
-
-jmp objectsloop
-rts
+ 
 
 
 showgameover 
@@ -1243,118 +1339,11 @@ sta positionlbuffer
  
 
 rts
-collisionforflyingobj
- 
- 
-inx
-
-lda objecbuffer
-adc scrollvalue
-cmp wallpix,x
 
 
-beq reversetriggered
-
-
-lda objecbuffer
-
-adc scrollvalue
-eor #255
-cmp wallpix,x
- 
-beq reversetrigger2
-
- cpx #255
-bne collisionforflyingobj
-rts
-
-
-reverse
- 
-reverseloop
- 
- 
- 
-lda objecbuffer
- adc reversetrigger
- 
- 
-sta objecbuffer
- 
- rts
- 
-reversetriggered
- 
-  
-lda reversetrigger
  
 
-eor #255
- 
- bcs incobjecthibyte
- 
- sta reversetrigger
- 
-revlable2
- 
 
-sta reversetrigger
- 
-
-rts
-reversetrigger2
-sec
-  lda reversetrigger
-sbc #39
- sta reversetrigger
- 
-
-  bcc decobjecthibyte
-  
- sta reversetrigger
- 
- 
- 
-rts
- 
-
- 
- 
-decobjecthibyte
- 
-lda objectspositionh
-sbc #1
- 
- 
-cmp #00
- beq objecthighresethi
- sta objectspositionh
- 
- 
- rts
-incobjecthibyte 
- clc
- 
- lda objectspositionh
-adc #1
- cmp #05
-beq objecthighreset
- 
-
-  sta objectspositionh
- 
-rts
-objecthighreset
-
-lda #1
-sta objectspositionh
- 
-rts
-objecthighresethi
-lda #4
-sta objectspositionh
- 
-rts
   
 scorecorrection
 lda scoreones
