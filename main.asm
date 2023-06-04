@@ -304,12 +304,7 @@ somelinedown
 ldy #$0
 jsr cls
  
- ldx objecbuffer
 
- txa
- adc reversetrigger
- tax
- stx objecbuffer
  
  
  ldx #0
@@ -1047,8 +1042,6 @@ objectsloop
  
 inx  
 iny 
- 
-
 
 ;lda objecbuffer 
 ;cmp positionl
@@ -1056,7 +1049,21 @@ iny
 
 jsr bullettoboxcollision2
  
+ 
+ ldx objecbuffer
 
+ txa
+ adc reversetrigger
+ tax
+ stx objecbuffer
+
+sec
+
+ldx objecbuffer
+txa
+sbc #40
+tax
+bcc decobjecthibyte
  
  clc
 
@@ -1064,17 +1071,10 @@ ldx objecbuffer
 
 txa
  
-adc #50
+adc #40
 tax
 bcs incobjecthibyte
 
-sec
-
-ldx objecbuffer
-txa
-sbc #50
-tax
-bcc decobjecthibyte
 
 
  ;bcs incobjecthibyte
