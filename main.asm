@@ -27,6 +27,7 @@ bgcolor =$024
 charactertemporary = $026
 charactercolour = $27
 objectschar1 = $6677
+objcolour = $41
 objectschar2 = $6689
 objectschar3 = $6643
 objectschar4 = $6699
@@ -276,6 +277,26 @@ bne copyboxcharacterloop
 
 
 mainloop
+   jsr scrolling 
+ jsr printscore
+
+ 
+ ldx #0
+ 
+ldy #$0
+ 
+ jsr displayobjects 
+  
+  jsr bullettoboxcollision2
+
+
+ ldx #0
+ldy #$0
+jsr display  
+
+
+
+ 
  
  ldx #0
 ldy #$0
@@ -283,41 +304,23 @@ jsr collisionforship
  ldx #0
 ldy #$0
 jsr collisionforflyingobj
+ldx #0
  
-jsr wastetime
-
-lda scrollvalue
-sbc positionlbuffer
-sta scrollvalue
-lda scrolltrigger
-cmp #0
-beq somelinedown
-lda scrollvalue
-
-
-adc #26
-
-sta scrollvalue
-somelinedown
- 
- ldx #0
 ldy #$0
-jsr cls
- 
+ jsr cls
 
  
  
  ldx #0
+ 
 ldy #$0
- jsr displayobjects 
+
+
  
  jsr collision 
    ldx #0
-ldy #$0
-jsr displayroad 
- ldx #0
-ldy #$0
-jsr display
+
+
  ldx #0
 ldy #$0
  jsr displaybullet
@@ -329,21 +332,23 @@ ldy #$0
 jsr displayoppbullet2
  ldx #0
 ldy #$0
-
+  inc objcolour
 
  
  jsr bullettobullet
- jsr printscore
 
- 
 objectsdisplayed
+  ldx #0
+ 
+ldy #$0
+jsr displayroad 
 
  
  
-inc clscount
+ 
+ 
 
 jsr scanjoy
-  
  
 
 
@@ -351,7 +356,7 @@ jsr movejoy
 
  
 
-inc charactercolour
+;inc charactercolour
  
  jsr enemytrigger
  
@@ -359,7 +364,24 @@ jmp mainloop
 
 rts
 
+scrolling
 
+
+lda scrolltrigger
+cmp #0
+beq somelinedown
+lda scrollvalue
+
+
+adc #26
+
+sta scrollvalue
+somelinedown
+
+lda scrollvalue
+sbc positionlbuffer
+sta scrollvalue
+rts
 
 cls
  
@@ -389,50 +411,16 @@ sta $da00,y
 sta $daf0,y
  
  
- cpy #$00
+ cpy #$0
  
  bne clsloop
  
  rts
-
-
-wastetime
-ldx #0
-
-wastetimeloop
  
-  cpx #0
-bne wastetimeloop
- 
-rts
 
  
  
  
-clscol
- 
-clscolloop
-inx
- 
- 
- 
- 
- 
- 
-lda bgcolor
- 
- 
-sta $d800,y  
-sta $d900,y  
-sta $da00,y
-sta $daf0,y
- 
- 
- 
- cpx #$0
- beq clscolloop
- rts
-
 scanjoy            
           
            lda $dc00
@@ -882,12 +870,8 @@ score
 inc objecbuffer 
  
 lda objecbuffer
-cmp clscount
-;sta objecbuffer 
-beq boxexp
-adc #128 
-cmp clscount
-beq butterflyload
+ 
+ 
 jsr addscore
 
 
@@ -1020,7 +1004,7 @@ reversetriggered
 ldx reversetrigger
  
 txa
-eor #255
+eor #254
  
  tax
  
@@ -1039,7 +1023,7 @@ displayobjects
 
  
 objectsloop
- 
+clc
 inx  
 iny 
 
@@ -1047,33 +1031,19 @@ iny
 ;cmp positionl
 ;beq jumptogameover
 
-jsr bullettoboxcollision2
- 
- 
- ldx objecbuffer
 
+ 
+ldx objecbuffer
  txa
- adc reversetrigger
- tax
+adc #1
+ eor #254
+
+  tax
+ 
  stx objecbuffer
-
-sec
-
-ldx objecbuffer
-txa
-sbc #40
-tax
-bcc decobjecthibyte
+  bcs incobjecthibyte
  
- clc
-
-ldx objecbuffer
-
-txa
- 
-adc #40
-tax
-bcs incobjecthibyte
+ stx opposebulletposl2
 
 
 
@@ -1096,8 +1066,7 @@ beq displayobjecpg3
 cmp #4
 beq displayobjecpg4
 
-cpy #255
-;bne objectsloop
+  
 bypass
 rts
 jumptogameover
@@ -1119,7 +1088,7 @@ lda objectschar3
 sta $0428,x
 lda objectschar4
 sta $0429,x
-lda charactercolour
+lda objcolour
 sta $d800,x
 sta $d801,x
 sta $d828,x
@@ -1143,7 +1112,7 @@ lda objectschar3
 sta $0528,x
 lda objectschar4
 sta $0529,x
-lda charactercolour
+lda objcolour
 sta $d900,x
 sta $d901,x
 sta $d928,x
@@ -1163,7 +1132,7 @@ lda objectschar3
 sta $0628,x
 lda objectschar4
 sta $0629,x
-lda charactercolour
+lda objcolour
 sta $da00,x
 sta $da01,x
 sta $da28,x
@@ -1185,7 +1154,7 @@ lda objectschar3
 sta $0728,x
 lda objectschar4
 sta $0729,x
-lda charactercolour
+lda objcolour
 sta $db00,x
 sta $db01,x
  
@@ -1218,7 +1187,7 @@ sta $0459,y
 lda #3
 sta $d859,y
 iny
-cpy #$13
+cpy #$17
 bne showgameoverloop
  
 lda $dc00
@@ -1379,7 +1348,7 @@ addscore
                 
               
              
-             
+           
             inc bgcolor
               
 
@@ -1478,7 +1447,7 @@ startuptext !scr "vois"
 startuptext2   !scr "keyvan mehrbakhsh 2023"
 gameovertex
 
-          !scr " you hit press fire " 
+          !scr " you are hit press fire " 
 ;objecbuffer
    ;      !byte     0,0,0,0,0,0,0,0,0,0 
 circle1
