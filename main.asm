@@ -205,7 +205,7 @@ lda #83
 sta objectschar4
 lda #33
 sta bulletchar 
-lda #04
+lda #7
 sta bulletcolor
 
 ldx #0
@@ -285,7 +285,7 @@ mainloop
  
 ldy #$0
  
- jsr displayobjects 
+ 
   
   jsr bullettoboxcollision2
 
@@ -319,7 +319,7 @@ ldy #$0
  
  jsr collision 
    ldx #0
-
+jsr displayobjects 
 
  ldx #0
 ldy #$0
@@ -340,8 +340,7 @@ ldy #$0
 objectsdisplayed
   ldx #0
  
-ldy #$0
-jsr displayroad 
+
 
  
  
@@ -359,7 +358,8 @@ jsr movejoy
 ;inc charactercolour
  
  jsr enemytrigger
- 
+ ldy #$0
+jsr displayroad 
 jmp mainloop
 
 rts
@@ -925,7 +925,14 @@ beq safearea
 lda objecbuffer 
 cmp bulletpositionl
 beq checkhigh
-
+lda objecbuffer 
+adc #1
+cmp bulletpositionl
+beq checkhigh
+lda objecbuffer 
+sbc #1
+cmp bulletpositionl
+beq checkhigh
 rts
 checkhigh
 
@@ -1244,31 +1251,64 @@ displayroad
 
 
 displayroadloop
-
+clc
 inx
 
 
+ 
+
 lda wallpix,x
- cmp #255
- beq bypass3
+ 
+cmp #255
+beq bypass3
+adc scoreones
+ 
+ ror
+ 
 adc scrollvalue
-
-;beq collisionoccuredtowalls
-
+ 
 tay
  
-lda #123
+ lda #123
 sta $0400,y
+tya
+adc scrollvalue
+tay
+lda #123
 sta $0500,y
-sta $0600,y
-sta $0700,y
-lda #6
+tya
+adc scrollvalue
+tay
 
+lda #123
+sta $0600,y
+tya
+adc scrollvalue
+tay
+lda #123
+sta $0700,y
+lda scoreones
+ lda scoreones
 sta $d800,y
+tya
+adc scrollvalue
+tay
+ lda scoreones
 sta $d900,y 
+tya
+adc scrollvalue
+tay
+ lda scoreones
 sta $da00,y 
+tya
+adc scrollvalue
+tay
+ lda scoreones
 sta $db00,y
 
+ cpx #255
+
+ bne displayroadloopbridge
 ;lda positionh
 ;cmp #$01
 ;beq displaypageone
@@ -1279,11 +1319,12 @@ sta $db00,y
 ;cmp #$04
 ;sbeq displaypagefour  
 
- cpx #255
-
- bne displayroadloop
+ 
 bypass3 
 rts 
+displayroadloopbridge
+jsr displayroadloop
+rts
 collisionforship
 
 iny
@@ -1376,9 +1417,13 @@ addscore
 
 addtens			 
               
-            inc opposebulletcolor
-               inc $d021
-                inc scoretens
+            
+              dec $d021
+              
+               inc opposebulletcolor
+               inc charactercolour
+               inc bulletcolor
+               inc scoretens
 			
 				lda #00
 				sta scoreones
