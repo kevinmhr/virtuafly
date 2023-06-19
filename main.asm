@@ -357,7 +357,7 @@ jsr movejoy
 
 ;inc charactercolour
  
- jsr enemytrigger
+ 
  ldy #$0
 jsr displayroad 
 jmp mainloop
@@ -865,23 +865,63 @@ lda opposebulletposh
 beq score
 rts
 
-score
 
+
+
+
+bullettoboxcollision2
+ 
+
+lda objecbuffer 
+cmp #255
+beq safearea
+cmp #0
+beq safearea
+cmp bulletpositionl
+beq checkhigh
+adc #1
+cmp bulletpositionl
+beq checkhigh
+sbc #1
+cmp bulletpositionl
+beq checkhigh
+
+rts
+checkhigh
+
+
+lda objectspositionh
+cmp bulletpositionh
+beq score
+ 
+rts
+
+score
+inc opposebulletposl
 inc objecbuffer 
  
 lda objecbuffer
  
  
 jsr addscore
-
-
+lda scoretens
+cmp #1
+beq butterflyload
+cmp #3
+beq boxexp
+cmp #6
+beq butterflyload
+cmp #8
+beq boxexp
+cmp #10
+beq butterflyload
 safearea 
  
 
 
 
 rts 
-
+ 
 butterflyload
 ldy #0
 butterflyloadloop
@@ -914,39 +954,6 @@ sta $22a0,y
 iny
 bne boxexploop
 rts
-
-
-bullettoboxcollision2
-lda bulletpositionl
-cmp #255
-beq safearea
-cmp #0
-beq safearea
-lda objecbuffer 
-cmp bulletpositionl
-beq checkhigh
-lda objecbuffer 
-adc #1
-cmp bulletpositionl
-beq checkhigh
-lda objecbuffer 
-sbc #1
-cmp bulletpositionl
-beq checkhigh
-rts
-checkhigh
-
-lda bulletpositionh
-cmp #3
-beq score
-cmp #2
-beq score
-cmp #1
-beq score
-rts
-
-
- 
  
 decobjecthibyte
  sec
@@ -1372,14 +1379,7 @@ sta scoreones
 lda #0
 sta scoretens
 rts
-enemytrigger
-ldy scoreones
-cpy #3
-beq backtostart
-cpy #7
-beq backtostart
  
- rts
 backtostart
 jsr loadenemies
 rts
