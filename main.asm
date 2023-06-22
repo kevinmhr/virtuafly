@@ -740,14 +740,17 @@ incroppbulletpositionh
 
 
 lda opposebulletposh
-cmp #4
+cmp #5
 beq resetopposebulletposh
 inc opposebulletposh
  
 rts
 resetopposebulletposh 
-
-lda #1 
+ 
+ 
+lda objecbuffer
+sta opposebulletposl
+lda objectspositionh
 sta opposebulletposh
 rts
  
@@ -763,7 +766,7 @@ displayoppbulletloop
 clc
 inx
 iny
-
+ 
  
 
 ldx opposebulletposl
@@ -792,11 +795,10 @@ beq displayoppbulletpg3
 cmp #$04
 beq displayoppbulletpg4
 
-  
-cpy #$ff
-beq displayoppbulletloopbridge
+ 
  
 rts
+
 displayoppbulletloopbridge
 jsr displayoppbulletloop
 rts
@@ -871,7 +873,15 @@ rts
 
 bullettoboxcollision2
  
-
+lda objecbuffer
+cmp positionl
+beq safearea
+adc #1
+cmp positionl
+beq safearea
+sbc #1
+cmp positionl
+beq safearea
 lda objecbuffer 
 cmp #255
 beq safearea
