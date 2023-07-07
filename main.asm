@@ -13,8 +13,6 @@ volume   =$33
 hifreq   =$34
 lofreq   =$35
 wavefm   =$36
-whiteblock =$37
-appleblock =$38
 positionh =$6044
 positionl =$6045
 character =$4006
@@ -22,12 +20,12 @@ character1 =$4007
 character2 =$4008
 character3 =$4009
 fourty = $6387
-bgchar =$022
-bgcolor =$024
+bgchar =$045
+bgcolor =$044
 charactertemporary = $026
-charactercolour = $27
+charactercolour = $46
 objectschar1 = $6677
-objcolour = $41
+objcolour = $47
 objectschar2 = $6689
 objectschar3 = $6643
 objectschar4 = $6699
@@ -39,7 +37,7 @@ opposebulletposh = $6250
 opposebulletposh2 = $6253
 opposebulletcolor = $6254
 objectspositionh = $29
-objectspositionl = $30
+objectspositionl = $60
 bulletpositionh = $6848
 bulletpositionl = $6248
 scoreones =$40ff
@@ -52,7 +50,7 @@ objecbuffer = $6c00
 clscount = $4a00
 currentcell = $03
 scrollvalue = $37
-scrolltrigger = $38
+scrolltrigger = $69
 positionlbuffer = $39
 positionlbuffer2 = $40
 reversezp = $41
@@ -280,24 +278,19 @@ bne copyboxcharacterloop
 
 
 mainloop
-   jsr scrolling 
- jsr printscore
-
- 
- ldx #0
- 
-ldy #$0
- 
- 
   
-  jsr bullettoboxcollision2
+jsr scanjoy
+ 
 
 
- ldx #0
-ldy #$0
-jsr display  
+jsr movejoy
+  
 
 
+ 
+
+  jsr scrolling 
+ jsr printscore
  
  
  ldx #0
@@ -305,30 +298,15 @@ ldy #$0
 jsr collisionforship
  ldx #0
 ldy #$0
-jsr collisionforflyingobj
+;jsr collisionforflyingobj
 ldx #0
  
 ldy #$0
 ldx #0
-clsloop2
-dex
-lda bgcolor
  
- 
-sta $d800,x  
-sta $d900,x 
-sta $da00,x
-sta $daf0,x
- 
- 
- cpx #$0
- 
- bne clsloop2
-
-
 
 jsr cls
-
+jsr display  
  
  
  ldx #0
@@ -364,14 +342,23 @@ objectsdisplayed
 
  
  
- 
- 
-
-jsr scanjoy
- 
 
 
-jsr movejoy
+
+ 
+ ldx #0
+ 
+ldy #$0
+ 
+ 
+  
+  jsr bullettoboxcollision2
+
+
+ ldx #0
+ldy #$0
+ 
+
 
  
 
@@ -379,7 +366,8 @@ jsr movejoy
  
  
  ldx #$0
-jsr displayroad 
+dec clscount
+ jsr displayroad 
 jmp mainloop
 
 rts
@@ -405,7 +393,7 @@ rts
 
 cls
  
- 
+
 
  
  
@@ -418,9 +406,30 @@ dex
  
  lda bgchar 
 sta $0400,x  
-sta $0500,x  
+lda #0
+sta $d800,x  
+lda bgchar
+sta $0500,x 
+lda #0
+sta $d900,x 
+lda bgchar
 sta $0600,x
-sta $06f0,x
+lda #0
+sta $da00,x
+lda bgchar
+sta $0700,x
+lda #0
+sta $db00,x
+
+ 
+ 
+
+
+
+
+ 
+ 
+
 cpx #$0
 bne clsloop
 
@@ -1289,50 +1298,52 @@ cmp #255
 beq bypass3
 adc scoreones
  
- ror
+ 
+ 
+ 
  
 adc scrollvalue
- 
+ ror
 tay
  
  lda #123
 sta $0400,y
 tya
-adc scrollvalue
+ adc scrollvalue
 tay
 lda #123
 sta $0500,y
 tya
-adc scrollvalue
+ adc scrollvalue
 tay
 
 lda #123
 sta $0600,y
 tya
-adc scrollvalue
+ adc scrollvalue
 tay
 lda #123
 sta $0700,y
 lda scoreones
- lda scoreones
+ 
 sta $d800,y
 tya
-adc scrollvalue
+ adc scrollvalue
 tay
  lda scoreones
 sta $d900,y 
 tya
-adc scrollvalue
+ adc scrollvalue
 tay
  lda scoreones
 sta $da00,y 
 tya
-adc scrollvalue
+ adc scrollvalue
 tay
  lda scoreones
 sta $db00,y
 
- cpx #255
+ cpx clscount
 
  bne displayroadloopbridge
 ;lda positionh
