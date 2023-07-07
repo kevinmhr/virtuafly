@@ -93,15 +93,21 @@ lazbeep1
          sta susrel
          lda #15        ; 15
          sta volume
-      
-         lda #60; 12
-         sta hifreq
-          lda #10
+shootsnd          
+          ldx #0
+          inx
+          
+            ; 12
+         stx hifreq
+          lda #128
          sta lofreq
          lda #%00010000       ; 32 saw
          sta wavefm
 
          jsr soundgo1
+          
+       
+        
          rts
 
 lazbeep2

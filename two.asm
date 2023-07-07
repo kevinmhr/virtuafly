@@ -102,8 +102,7 @@ cmp #$03
 beq displaypagethree  
 cmp #$04
 beq displaypagefour  
- cpx #$ff
- bne displayloop
+ 
     
 rts 
 displaypageone
@@ -144,18 +143,18 @@ displaypagefour
  
 
 lda character
-sta $0700,y
+sta $06d8,y
 lda character1 
-sta $0701,y
+sta $06d9,y
 lda character2 
-sta $0728,y
+sta $0700,y
 lda character3 
-sta $0729,y
+sta $0701,y
 lda charactercolour
+sta $dad8,y
+sta $dad9,y
 sta $db00,y
 sta $db01,y
-sta $db28,y
-sta $db29,y
 
 rts
 

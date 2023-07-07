@@ -57,6 +57,7 @@ positionlbuffer = $39
 positionlbuffer2 = $40
 reversezp = $41
 reversetrigger = $42
+joysttrig = $43
 *=$0801
         !byte    $1E, $08, $0A, $00, $9E, $20, $28,  $32, $30, $38, $30, $29, $3a, $8f, $20, $28, $43, $29, $20, $32, $30, $32, $31, $20, $4D, $54, $53, $56, $00, $00, $00
  
@@ -168,6 +169,8 @@ lda #1
 sta opposebulletcolor
 lda #03
 sta charactercolour
+lda #0
+sta joysttrig
 lda #0
 sta scoreones
 sta scoretens 
@@ -295,7 +298,6 @@ ldy #$0
 jsr display  
 
 
-
  
  
  ldx #0
@@ -307,7 +309,25 @@ jsr collisionforflyingobj
 ldx #0
  
 ldy #$0
- jsr cls
+ldx #0
+clsloop2
+dex
+lda bgcolor
+ 
+ 
+sta $d800,x  
+sta $d900,x 
+sta $da00,x
+sta $daf0,x
+ 
+ 
+ cpx #$0
+ 
+ bne clsloop2
+
+
+
+jsr cls
 
  
  
@@ -358,7 +378,7 @@ jsr movejoy
 ;inc charactercolour
  
  
- ldy #$0
+ ldx #$0
 jsr displayroad 
 jmp mainloop
 
@@ -390,30 +410,20 @@ cls
  
  
 clsloop
-inx
+ 
 
 
-dey
+dex
  
  
  lda bgchar 
-sta $0400,y  
-sta $0500,y  
-sta $0600,y
-sta $06f0,y
- 
-lda bgcolor
- 
- 
-sta $d800,y  
-sta $d900,y  
-sta $da00,y
-sta $daf0,y
- 
- 
- cpy #$0
- 
- bne clsloop
+sta $0400,x  
+sta $0500,x  
+sta $0600,x
+sta $06f0,x
+cpx #$0
+bne clsloop
+
  
  rts
  
@@ -424,15 +434,8 @@ sta $daf0,y
 scanjoy            
           
            lda $dc00
-          
-            sta lastkey
-           
-         cmp #$6f
-               beq fire
-            cmp #$7f
-            beq storekey
-               
-           sta lastkey
+          jsr storekey
+             
  
            rts
 fire	
@@ -457,12 +460,16 @@ sta lastkey
 rts
 
 storekey 
- 
+ldy #0
+cpy joysttrig
+beq dojoy
 
- sta lastkey
   
     
  
+rts
+dojoy
+sta lastkey
 rts
 
 readyforshoot
@@ -483,7 +490,8 @@ rts
 movejoy 
                 
                 lda lastkey
-              
+                cmp #$6f
+                beq fire
                 cmp #$7b   
 				beq left ;
 				cmp #$7e   
@@ -502,7 +510,7 @@ left
   
  
 
-  jsr tickingsound
+ 
    
     lda positionl
     sec
@@ -523,7 +531,7 @@ sta positionl
 rts
 right 
  
-jsr tickingsound
+ 
  lda positionl
     clc
     adc #01
@@ -544,7 +552,7 @@ rts
 
 down
   
-  jsr tickingsound
+ 
    
    lda positionl
  
@@ -565,7 +573,7 @@ down
 up
  
  
-jsr tickingsound
+ 
   lda positionl
     sec
     sbc #40
@@ -595,8 +603,9 @@ rts
 
 
 incresehighbyte   
-
+clc
 inc positionh
+
 lda positionh
 cmp #5
 beq dechibyteagain
@@ -604,7 +613,7 @@ beq dechibyteagain
  
 rts
 dechibyteagain
-
+ 
 lda #01
 sta positionh
 increaselowbyte
@@ -882,7 +891,7 @@ beq safearea
 sbc #1
 cmp positionl
 beq safearea
-lda objecbuffer 
+lda objecbuffer
 cmp #255
 beq safearea
 cmp #0
@@ -900,8 +909,8 @@ rts
 checkhigh
 
 
-lda objectspositionh
-cmp bulletpositionh
+lda bulletpositionh
+cmp objectspositionh
 beq score
  
 rts
