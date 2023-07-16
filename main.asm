@@ -104,7 +104,7 @@ stopcpy
          ora #4
          sta $01
 
-
+      
 lda circle1 
 sta $2260 
 lda circle2 
@@ -136,8 +136,9 @@ lda theship4,y
 sta $2280,y
  
 
-iny
  
+iny
+cpy #8
 bne copyshipcharacterloop
  
 
@@ -155,7 +156,7 @@ lda #40
 sta reversetrigger
 lda #1
 sta objecbuffer
-lda #$03
+lda #$04
 sta positionh
 lda #77
 sta character
@@ -206,7 +207,7 @@ lda #84
 sta objectschar3
 lda #83
 sta objectschar4
-lda #33
+lda #85
 sta bulletchar 
 lda #7
 sta bulletcolor
@@ -262,7 +263,8 @@ cpx #10
 copyboxcharacter 
 ldy #0
 copyboxcharacterloop
-
+lda bulletchardata,y
+sta $22a8,y
 
 lda thebox,y
 sta $2288,y
@@ -272,77 +274,90 @@ lda thebox2,y
 sta $2298,y
 lda thebox3,y
 sta $22a0,y
+lda bulletchardata,y
+sta $22a8,y
+lda oppbulletchardata,y
+sta $22b0,y
+lda sidebulletchardata,y
+sta $22b8,y
+iny
+cpy #8
+ 
+bne copyboxcharacterloop
+copybulletcharacter 
+ldy #0
+copybulletcharacterloop
+
+
+
+
 
 iny
  
-bne copyboxcharacterloop
-
-
+bne copybulletcharacterloop
 
 mainloop
-   jsr scrolling 
- jsr printscore
+ldx #0 
+wastetime
+inx
+ldx #255
+cpx $d012
+bne wastetime
 
+ ldy #0
  
- ldx #0
+clsloop
  
-ldy #$0
- 
- 
-  
-  jsr bullettoboxcollision2
-
-
- ldx #0
-ldy #$0
 
 
-
+dey
  
  
- ldx #0
-ldy #$0
-jsr collisionforship
- ldx #0
-ldy #$0
-jsr collisionforflyingobj
-ldx #0
- 
-ldy #$0
-ldx #0
+ lda #32
+sta $0400,y  
+sta $0500,y  
+sta $0600,y
+sta $06f0,y
+;cpy #255
+;bne clsloop
+;ldy #$0
+;ldx #0
 clsloop2
-dex
+;dex
 lda #0
  
  
-sta $d800,x  
-sta $d900,x 
-sta $da00,x
-sta $daf0,x
+sta $d800,y  
+sta $d900,y 
+sta $da00,y
+sta $daf0,y
  
  
- cpx #$0
+ cpy #0
  
- bne clsloop2
+ bne clsloop
+ 
 
-dec clscount
 
-jsr cls
+ 
+ ldy #0
+ 
 
- jsr display  
-    ldx #0
-jsr displayobjects 
+ 
+ ldx #$0
+jsr displayroad 
+   ldy #0
+ 
+
+ 
+ ldx #$0
+  
+  jsr display  
+   ldy #0
+ 
+
  ldx #0
  
-ldy #$0
-
-
- 
- jsr collision 
-
-
- ldx #0
-ldy #$0
  jsr displaybullet
 
  ldx #0
@@ -355,7 +370,50 @@ ldy #$0
   inc objcolour
 
  
- jsr bullettobullet
+ ldx #$0
+ 
+ jsr displayobjects 
+
+ jsr printscore
+ 
+ jsr bullettoboxcollision2
+
+
+ ldx #0
+ldy #$0
+
+
+   jsr scrolling 
+
+ 
+ 
+ ldx #0
+ldy #$0
+jsr collisionforship
+ ldx #0
+ldy #$0
+jsr collisionforflyingobj
+ 
+ 
+
+
+dec clscount
+
+
+
+
+
+ ldx #0
+ 
+ldy #$0
+
+
+ 
+ jsr collision 
+
+
+ 
+ 
 
 objectsdisplayed
   ldx #0
@@ -378,8 +436,7 @@ jsr movejoy
 ;inc charactercolour
  
  
- ldx #$0
-jsr displayroad 
+
 jmp mainloop
 
 rts
@@ -408,21 +465,6 @@ cls
  
 
  
- 
-clsloop
- 
-
-
-dex
- 
- 
- lda bgchar 
-sta $0400,x  
-sta $0500,x  
-sta $0600,x
-sta $06f0,x
-cpx #$0
-bne clsloop
 
  
  rts
@@ -814,7 +856,7 @@ rts
 
 displayoppbulletpg1
 
-lda #71
+lda #86
 sta $0400,x
  
 lda opposebulletcolor
@@ -826,7 +868,7 @@ sta $d800,x
 rts
 displayoppbulletpg2
  
-lda #71
+lda #86
 sta $0500,x
  
 lda opposebulletcolor
@@ -838,7 +880,7 @@ displayoppbulletpg3
  
  
  
-lda #71
+lda #86
 
 sta $0600,x
  
@@ -852,7 +894,7 @@ sta $da00,x
 displayoppbulletpg4
  
 
-lda #71
+lda #86
 sta $0700,x
  
  
@@ -904,7 +946,12 @@ beq checkhigh
 sbc #1
 cmp bulletpositionl
 beq checkhigh
-
+sbc #2
+cmp bulletpositionl
+beq checkhigh
+adc #2
+cmp bulletpositionl
+beq checkhigh
 rts
 checkhigh
 
@@ -953,6 +1000,7 @@ sta $2298,y
 lda thebuttfly4,y
 sta $22a0,y 
 iny
+cpy #8
 bne butterflyloadloop
 rts
 
@@ -971,6 +1019,7 @@ lda thejack3,y
 sta $22a0,y
 
 iny
+cpy #8
 bne boxexploop
 rts
  
@@ -1535,42 +1584,42 @@ wallpix !byte 0,1,2,3,4,5,6,7,8,9,10,41,42,43,44,45,46,47,48,49,50,81,82,83,84,8
  
 theship   !byte   %00000001
           !byte   %00000001
-          !byte   %00010001
-          !byte   %00010011
-          !byte   %00011101
+          !byte   %00110001
+          !byte   %00110011
+          !byte   %00111101
           !byte   %00010111
           !byte   %00100001
-          !byte   %11111111
+          !byte   %00011111
           
 theship2              
            !byte   %00000010
-           !byte   %00001101
+           !byte   %00000101
            !byte   %00000011
-           !byte   %11111111
-           !byte   %00000111
-           !byte   %00001111
-           !byte   %00011001
-           !byte   %01100001
+           !byte   %00111111
+           !byte   %00100111
+           !byte   %01000000
+           !byte   %01000000
+           !byte   %01111111
            
 theship3              
             !byte  %10000000
             !byte  %10000000
-            !byte  %10001000
-            !byte  %11001000
-            !byte  %10111000
+            !byte  %10001100
+            !byte  %11001100
+            !byte  %10111100
             !byte  %11101000
             !byte  %10000100
-            !byte  %11111111
+            !byte  %11111000
 theship4              
              
             !byte  %01000000
-            !byte  %10110000
+            !byte  %10100000
             !byte  %11000000
-            !byte  %11111111
-            !byte  %11100000
-            !byte  %11110000
-            !byte  %10011000
-            !byte  %10000110
+            !byte  %11111100
+            !byte  %11100100
+            !byte  %00000010
+            !byte  %00000010
+            !byte  %11111110
             
             
 thebox   !byte    %11111111
@@ -1691,6 +1740,37 @@ thejack3
           !byte   %00000111
           !byte   %00000000
           !byte   %00000000
+          
+          
+bulletchardata              
+          !byte   %00000000
+          !byte   %00011000
+          !byte   %00011000
+          !byte   %00011000
+          !byte   %00011000
+          !byte   %00011000
+          !byte   %00111100
+          !byte   %00000000
+          
+oppbulletchardata              
+          !byte   %00111000
+          !byte   %00111000
+          !byte   %00111000
+          !byte   %00111000
+          !byte   %00111000
+          !byte   %00111000
+          !byte   %00111000
+          !byte   %00111000
+          
+sidebulletchardata              
+          !byte   %00011000
+          !byte   %00011000
+          !byte   %00111100
+          !byte   %11111111
+          !byte   %00111100
+          !byte   %00011000
+          !byte   %00000000
+          !byte   %00000000          
 
 
   !source "two.asm"                  

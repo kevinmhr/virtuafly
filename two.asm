@@ -12,10 +12,10 @@ inx
      sta $061b
       sta $0643
       sta $066b
-       lda #7
+       lda #2
        sta $da1b
       sta $da43
-      sta $da6b
+     ;sta $da6b
       
     
       lda #128
@@ -91,9 +91,11 @@ ldx #$0
 ldy #0
 
 displayloop
-inx
+clc
 lda positionh
-ldy positionl
+ldx positionl
+cpx #255
+beq bypass4
 cmp #$01
 beq displaypageone
 cmp #$02
@@ -102,77 +104,77 @@ cmp #$03
 beq displaypagethree  
 cmp #$04
 beq displaypagefour  
- 
+bypass4
     
 rts 
 displaypageone
 
 lda character 
-sta $0400,y
+sta $0400,x
 lda character1 
-sta $0401,y
+sta $0401,x
 lda character2 
-sta $0428,y
+sta $0428,x
 lda character3 
-sta $0429,y
+sta $0429,x
 lda charactercolour
-sta $d800,y
-sta $d801,y
-sta $d828,y
-sta $d829,y
+sta $d800,x
+sta $d801,x
+sta $d828,x
+sta $d829,x
 
 rts
 displaypagetwo
 
 lda character 
-sta $0500,y
+sta $0500,x
 lda character1 
-sta $0501,y
+sta $0501,x
 lda character2 
-sta $0528,y
+sta $0528,x
 lda character3 
-sta $0529,y
+sta $0529,x
 lda charactercolour
-sta $d900,y
-sta $d901,y
-sta $d928,y
-sta $d929,y
+sta $d900,x
+sta $d901,x
+sta $d928,x
+sta $d929,x
  
 rts
 displaypagefour
  
 
 lda character
-sta $06d8,y
+sta $06d8,x
 lda character1 
-sta $06d9,y
+sta $06d9,x
 lda character2 
-sta $0700,y
+sta $0700,x
 lda character3 
-sta $0701,y
+sta $0701,x
 lda charactercolour
-sta $dad8,y
-sta $dad9,y
-sta $db00,y
-sta $db01,y
+sta $dad8,x
+sta $dad9,x
+sta $db00,x
+sta $db01,x
 
 rts
 
 displaypagethree
  
 lda character
-sta $0600,y
+sta $0600,x
 lda character1 
-sta $0601,y
+sta $0601,x
 lda character2 
-sta $0628,y
+sta $0628,x
 lda character3 
-sta $0629,y
+sta $0629,x
 lda charactercolour
-sta $da00,y 
-sta $da01,y
-sta $da28,y
-sta $da29,y
+sta $da00,x 
+sta $da01,x
+sta $da28,x
+sta $da29,x
  
 rts
 
@@ -247,7 +249,7 @@ rts
 
 displayoppbullet2pg1
 
-lda #70
+lda #87
 sta $0400,x
  
 lda opposebulletcolor
@@ -259,7 +261,7 @@ sta $d800,x
 rts
 displayoppbullet2pg2
  
-lda #70
+lda #87
 sta $0500,x
  
 lda opposebulletcolor
@@ -271,7 +273,7 @@ displayoppbullet2pg3
  
  
  
-lda #70
+lda #87
 
 sta $0600,x
  
@@ -285,7 +287,7 @@ sta $da00,x
 displayoppbullet2pg4
  
 
-lda #70
+lda #87
 sta $0700,x
  
  
