@@ -48,7 +48,7 @@ voicefreq = $31
 scorehunds = $40fd
 scorethous = $40fa 
 bulletcolor = $2055
-objecbuffer = $6c00
+objecbuffer2 = $6c00
 clscount = $4a00
 currentcell = $03
 scrollvalue = $37
@@ -58,6 +58,7 @@ positionlbuffer2 = $40
 reversezp = $41
 reversetrigger = $42
 joysttrig = $43
+bullettrigger = $44
 *=$0801
         !byte    $1E, $08, $0A, $00, $9E, $20, $28,  $32, $30, $38, $30, $29, $3a, $8f, $20, $28, $43, $29, $20, $32, $30, $32, $31, $20, $4D, $54, $53, $56, $00, $00, $00
  
@@ -149,8 +150,8 @@ ldx #0
 ldy #0
 lda #41
 sta reversezp
-lda #0
-sta $d020
+lda #1
+
 sta $d021
 lda #40
 sta reversetrigger
@@ -166,12 +167,14 @@ lda #78
 sta character2
 lda #80
 sta character3
-lda #1
+lda #0
+sta $d020
 sta opposebulletcolor
 lda #03
 sta charactercolour
 lda #0
 sta joysttrig
+sta bullettrigger
 lda #0
 sta scoreones
 sta scoretens 
@@ -209,7 +212,7 @@ lda #83
 sta objectschar4
 lda #85
 sta bulletchar 
-lda #7
+lda #6
 sta bulletcolor
 
 ldx #0
@@ -244,22 +247,9 @@ lda $dc00
 cmp #$6f
 bne startscreen
 cmp #$6f
-beq loadenemies
+beq copyboxcharacter
 rts
-loadenemies 
- 
- 
-ldx #0  
- 
-loadenemiesloop  
 
-lda somenum,x
-inx
-
- 
- sta objecbuffer,x
-cpx #10
- bne loadenemiesloop
 copyboxcharacter 
 ldy #0
 copyboxcharacterloop
@@ -295,7 +285,24 @@ copybulletcharacterloop
 iny
  
 bne copybulletcharacterloop
+loadenemies 
+                dec $d021
+              
+               inc opposebulletcolor
+               inc charactercolour
+               inc bulletcolor
+ 
+ldx #0  
+ 
+loadenemiesloop  
+inx
+lda somenum2,x
 
+
+ 
+sta objecbuffer,x
+cpx #21
+ bne loadenemiesloop
 mainloop
 ldx #0 
 wastetime
@@ -375,8 +382,7 @@ ldy #$0
  jsr displayobjects 
 
  jsr printscore
- 
- jsr bullettoboxcollision2
+  
 
 
  ldx #0
@@ -481,7 +487,14 @@ scanjoy
  
            rts
 fire	
-  lda positionl
+ lda bullettrigger
+ cmp #0
+
+ beq fire2 
+ rts
+fire2
+ 
+lda positionl
 sta bulletpositionl
 
  lda positionh
@@ -489,8 +502,24 @@ sta bulletpositionh
  
  
   jsr lazbeep1 
+  
+   
+ 
 
-
+ lda scoretens
+ 
+cmp #2
+beq checkscoreones
+ 
+cmp #4
+beq checkscoreones
+cmp #6
+beq checkscoreones
+cmp #8
+beq checkscoreones
+ lda scorehunds
+ cmp #1
+beq checkscoreones
  
 notascore
  
@@ -500,7 +529,17 @@ sta lastkey
  
 
 rts
+checkscoreones
 
+ lda scoreones
+ cmp #0
+ beq loadenemiesbrid
+ 
+ 
+rts
+loadenemiesbrid
+jsr loadenemies
+rts
 storekey 
 ldy #0
 cpy joysttrig
@@ -513,21 +552,7 @@ rts
 dojoy
 sta lastkey
 rts
-
-readyforshoot
-
  
- 
-
- jsr lazbeep2
-
- 
- 
- jsr displaybullet
- 
-
- 
-rts     
 
 movejoy 
                 
@@ -690,15 +715,24 @@ rts
 decrbulletpositionh
 
 
-
+lda bulletpositionh
+cmp #0
+beq putbulletback
 
 dec bulletpositionh
  
- 
+
  
 rts
+putbulletback
+lda #0
+sta bullettrigger
+lda positionl
+sta bulletpositionl
+rts 
 displaybullet
- 
+lda #1
+sta bullettrigger
 displaybulletloop
  
 ldx bulletpositionl
@@ -799,7 +833,7 @@ rts
 resetopposebulletposh 
  
  
-lda objecbuffer
+lda opposebulletposl2
 sta opposebulletposl
 lda objectspositionh
 sta opposebulletposh
@@ -915,7 +949,7 @@ bullettobulleth
 lda opposebulletposh
 cmp bulletpositionh
 lda opposebulletposh
-beq score
+;beq score
 rts
 
 
@@ -924,20 +958,20 @@ rts
 
 bullettoboxcollision2
  
-lda objecbuffer
+lda objecbuffer2
 cmp positionl
-beq safearea
+;beq safearea
 adc #1
 cmp positionl
-beq safearea
+;beq safearea
 sbc #1
 cmp positionl
-beq safearea
-lda objecbuffer
+;beq safearea
+lda objecbuffer2
 cmp #255
-beq safearea
+;beq safearea
 cmp #0
-beq safearea
+;beq safearea
 cmp bulletpositionl
 beq checkhigh
 adc #1
@@ -962,50 +996,12 @@ beq score
  
 rts
 
-score
-inc opposebulletposl
-inc objecbuffer 
- 
-lda objecbuffer
- 
- 
-jsr addscore
-lda scoretens
-cmp #1
-beq butterflyload
-cmp #3
-beq boxexp
-cmp #6
-beq butterflyload
-cmp #8
-beq boxexp
-cmp #10
-beq butterflyload
-safearea 
- 
 
-
-
-rts 
  
-butterflyload
-ldy #0
-butterflyloadloop
-lda thebuttfly1,y
-sta $2288,y
-lda thebuttfly2,y
-sta $2290,y
-lda thebuttfly3,y
-sta $2298,y
-lda thebuttfly4,y
-sta $22a0,y 
-iny
-cpy #8
-bne butterflyloadloop
-rts
 
 boxexp
 ldy #0
+
 boxexploop
 
  
@@ -1021,8 +1017,61 @@ sta $22a0,y
 iny
 cpy #8
 bne boxexploop
-rts
  
+rts
+score
+lda bulletpositionh
+cmp #1
+beq score2
+rts
+score2
+
+inc opposebulletposl
+
+ 
+lda #0 
+sta objecbuffer,y
+lda positionl
+sta bulletpositionl
+ 
+jsr addscore
+lda scoretens
+ adc scoreones
+cmp #2 
+beq butterflyload
+cmp #4
+beq boxexp
+cmp #6
+beq butterflyload
+cmp #8
+beq boxexp
+  lda scorehunds
+ cmp #1
+ beq butterflyload
+ 
+
+
+
+rts 
+butterflyload
+ldy #0
+                
+butterflyloadloop
+lda thebuttfly1,y
+sta $2288,y
+lda thebuttfly2,y
+sta $2290,y
+lda thebuttfly3,y
+sta $2298,y
+lda thebuttfly4,y
+sta $22a0,y 
+iny
+cpy #8
+bne butterflyloadloop
+ 
+rts
+
+
 decobjecthibyte
  sec
 lda objectspositionh
@@ -1061,13 +1110,12 @@ collisionforflyingobj
  
 inx
  
-lda objecbuffer
+lda objecbuffer,x
  adc scrollvalue
 
 cmp wallpix,x
 
-
-beq reversetriggered
+ 
  
 
 
@@ -1079,21 +1127,6 @@ rts
 
  
  
-reversetriggered
- 
-
- 
-ldx reversetrigger
- 
-txa
-eor #254
- 
- tax
- 
- 
- stx reversetrigger
-
-rts
 
 revlable2
  
@@ -1102,72 +1135,45 @@ rts
 displayobjects 
 
 
-
+ldy #0
  
 objectsloop
 clc
   
 iny 
-
+ 
 ;lda objecbuffer 
 ;cmp positionl
 ;beq jumptogameover
 
 
- 
 
-;  
-
-ldx objecbuffer
-txa
-
-cmp somenum2,y
- 
-bne adc40
-txa
-adc #1
- tax
- adc somenum2,y
- stx objecbuffer
- 
 
  
-adc40
-ldx objecbuffer
-txa
-adc #39
+ 
+lda objecbuffer,y
+ 
+sta objecbuffer2 
+ror objecbuffer2
 
-tax
-stx objecbuffer
-  bcs incobjecthibyte
- stx objecbuffer
- txa
- eor #1
- tax
-ldx objecbuffer
- cmp #0
-beq bypass
+ 
+lda objecbuffer2
+ 
+ 
 cmp #255
-beq bypass
-tax
-lda objectspositionh
-cmp #1
-beq displayobjecpg1
-cmp #2
-beq displayobjecpg2
-cmp #3
-beq displayobjecpg3
-cmp #4
-beq displayobjecpg4
+beq safearea
+cmp #0
+beq safearea
+cmp bulletpositionl
 
-  
+beq scorebridge
+ 
+ 
+
+tax
 bypass
  
-rts
  
-displayobjecpg1
- 
-
  
          
 lda objectschar1
@@ -1184,12 +1190,21 @@ sta $d801,x
 sta $d828,x
 sta $d829,x
  
- 
- 
- 
+safearea
+cpy #21
+bne objectsloop
+
 rts
 
- 
+scorebridge
+jsr score
+rts
+objectanimate
+
+lda objecbuffer,y
+ora #1
+sta objecbuffer,y
+rts
 displayobjecpg2
  
  
@@ -1494,11 +1509,7 @@ addscore
 addtens			 
               
             
-              dec $d021
-              
-               inc opposebulletcolor
-               inc charactercolour
-               inc bulletcolor
+          
                inc scoretens
 			
 				lda #00
@@ -1590,7 +1601,10 @@ circle8
  
 wallpix !byte 0,1,2,3,4,5,6,7,8,9,10,41,42,43,44,45,46,47,48,49,50,81,82,83,84,85,86,87,88,89,90,121,122,123,124,125,126,127,128,129,130,161,162,163,164,165,166,167,168,169,170,201,202,203,204,205,206,207,208,209,210,241,242,243,244,245,246,247,248,249,250,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255, 255,255,255,255,255,255,255,255,255,255, 255,255,255,255,255,255,255,255,255,255, 255,255,255,255,255,255,255,255,255,255, 255,255,255,255,255,255,255,255,255,255, 255,255,255,255,255,255,255,255,255,255, 255,255,255,255,255,255,255,255,255,255, 255,255,255,255,255,255,255,255,255,255, 255,255,255,255,255,255,255,255,255,255, 255,255,255,255,255,255,255,255,255,255, 255,255,255,255,255,255,255,255,255,255, 255,255,255,255,255,255,255,255,255,255, 255,255,255,255,255,255,255,255,255,255, 255,255,255,255,255,255,255,255,255,255, 255,255,255,255,255,255,255,255,255,255, 255,255,255,255,255,255,255,255,255,255, 255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255  
 somenum2
-!byte 15,20,35,40,55,60,75,80,95,100,115,120,135,140,155,160,175,180,195,200,215,220,235,240,255 
+!byte 15,20,35,40,55,60,75,80,95,100,115,120,135,140,155,160,175,180,195,200,215,220,235,240
+objecbuffer !byte 15,20,35,40,55,60,75,80,95,100,115,120,135,140,155,160,175,180,195,200,215,220,235,240
+
+
 theship   !byte   %00000001
           !byte   %00000001
           !byte   %00110001
