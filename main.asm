@@ -27,7 +27,7 @@ bgcolor =$024
 charactertemporary = $026
 charactercolour = $27
 objectschar1 = $6677
-objcolour = $41
+objcolour = $78
 objectschar2 = $6689
 objectschar3 = $6643
 objectschar4 = $6699
@@ -214,12 +214,12 @@ lda #85
 sta bulletchar 
 lda #6
 sta bulletcolor
-
+sta charactercolour
 ldx #0
  
 startscreen
 
-jsr cls
+ 
 ldy #0
 
 startscreenloop
@@ -360,7 +360,7 @@ jsr displayroad
  ldx #$0
   
   jsr display  
-   ldy #0
+   
  
 
  ldx #0
@@ -389,16 +389,7 @@ ldy #$0
 ldy #$0
 
 
-   jsr scrolling 
-
  
- 
- ldx #0
-ldy #$0
-jsr collisionforship
- ldx #0
-ldy #$0
-jsr collisionforflyingobj
  
  
 
@@ -437,7 +428,9 @@ jsr scanjoy
 
 jsr movejoy
 
- 
+  lda scoreones
+ cmp #0
+ beq checkscoretens
 
 ;inc charactercolour
  
@@ -447,33 +440,6 @@ jmp mainloop
 
 rts
 
-scrolling
-
-
-lda scrolltrigger
-cmp #0
-beq somelinedown
-lda scrollvalue
-
-
-adc #26
-
-sta scrollvalue
-somelinedown
-
-lda scrollvalue
-sbc positionlbuffer
-sta scrollvalue
-rts
-
-cls
- 
- 
-
- 
-
- 
- rts
  
 
  
@@ -506,20 +472,7 @@ sta bulletpositionh
    
  
 
- lda scoretens
- 
-cmp #2
-beq checkscoreones
- 
-cmp #4
-beq checkscoreones
-cmp #6
-beq checkscoreones
-cmp #8
-beq checkscoreones
- lda scorehunds
- cmp #1
-beq checkscoreones
+
  
 notascore
  
@@ -529,12 +482,23 @@ sta lastkey
  
 
 rts
-checkscoreones
+checkscoretens
 
- lda scoreones
- cmp #0
- beq loadenemiesbrid
+ lda scoretens
  
+cmp #2
+beq loadenemiesbrid
+ 
+cmp #4
+beq loadenemiesbrid
+cmp #6
+beq loadenemiesbrid
+cmp #8
+beq loadenemiesbrid
+ lda scorehunds
+ cmp #1
+beq loadenemiesbrid
+ jmp mainloop
  
 rts
 loadenemiesbrid
@@ -1030,9 +994,9 @@ inc opposebulletposl
 
  
 lda #0 
-sta objecbuffer,y
-lda positionl
-sta bulletpositionl
+sta objecbuffer,x
+lda #0
+sta bulletpositionh
  
 jsr addscore
 lda scoretens
@@ -1106,32 +1070,7 @@ lda #4
 sta objectspositionh
  
 rts 
-collisionforflyingobj
  
-inx
- 
-lda objecbuffer,x
- adc scrollvalue
-
-cmp wallpix,x
-
- 
- 
-
-
- 
- cpx #255
-bne collisionforflyingobj 
-
-rts
-
- 
- 
-
-revlable2
- 
-
-rts
 displayobjects 
 
 
@@ -1140,18 +1079,14 @@ ldy #0
 objectsloop
 clc
   
-iny 
+inx 
  
-;lda objecbuffer 
-;cmp positionl
-;beq jumptogameover
-
 
 
 
  
  
-lda objecbuffer,y
+lda objecbuffer,x
  
 sta objecbuffer2 
 ror objecbuffer2
@@ -1170,28 +1105,28 @@ beq scorebridge
  
  
 
-tax
+tay
 bypass
  
  
  
          
 lda objectschar1
-sta $0400,x
+sta $0400,y
 lda objectschar2
-sta $0401,x
+sta $0401,y
 lda objectschar3
-sta $0428,x
+sta $0428,y
 lda objectschar4
-sta $0429,x
+sta $0429,y
 lda objcolour
-sta $d800,x
-sta $d801,x
-sta $d828,x
-sta $d829,x
+sta $d800,y
+sta $d801,y
+sta $d828,y
+sta $d829,y
  
 safearea
-cpy #21
+cpx #21
 bne objectsloop
 
 rts
@@ -1350,7 +1285,7 @@ displayroad
 
 displayroadloop
 clc
-inx
+
 
 
  
@@ -1362,51 +1297,57 @@ beq bypass3
 adc scoreones
  
  ror
- 
-adc scrollvalue
- 
+ adc positionl
+adc clscount
+adc #40 
 tay
  
- lda #123
+ lda #76
 sta $0400,y
 tya
-adc scrollvalue
+ 
+adc #40
 tay
-lda #123
+lda #76
 sta $0500,y
 tya
-adc scrollvalue
+ 
+adc #40
 tay
 
-lda #123
+lda #76
 sta $0600,y
 tya
-adc scrollvalue
+ 
+adc #40
 tay
-lda #123
+lda #76
 sta $0700,y
 lda scoreones
  lda scoreones
 sta $d800,y
 tya
-adc scrollvalue
+ 
+adc #40
 tay
  lda scoreones
 sta $d900,y 
 tya
-adc scrollvalue
+ 
+adc #40
 tay
  lda scoreones
 sta $da00,y 
 tya
-adc scrollvalue
+ 
+adc #40
 tay
  lda scoreones
 sta $db00,y
+inx
+ cpx #255
 
- cpx clscount
-
- bne displayroadloopbridge
+ bne displayroadloop 
 ;lda positionh
 ;cmp #$01
 ;beq displaypageone
@@ -1420,35 +1361,8 @@ sta $db00,y
  
 bypass3 
 rts 
-displayroadloopbridge
-jsr displayroadloop
-rts
-collisionforship
-
-iny
  
-inx
-
-lda wallpix,x
-
-adc scrollvalue
-cmp positionl
-
-beq soshipcollisionoccured 
-
- cpy #255
-bne collisionforship
-rts
-soshipcollisionoccured
-
-lda #$0
-sta scrolltrigger
-sta positionlbuffer
  
-
-rts
-
-
  
 
 
