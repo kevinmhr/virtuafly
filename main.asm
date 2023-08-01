@@ -292,7 +292,8 @@ loadenemies
                inc opposebulletcolor
                inc charactercolour
                inc bulletcolor
- 
+               inc scoreones
+               
 ldx #0  
  
 loadenemiesloop  
