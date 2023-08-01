@@ -92,10 +92,12 @@ ldy #0
 
 displayloop
 clc
-lda positionh
-ldx positionl
-cpx #255
+
+lda positionl
+cmp #255
 beq bypass4
+tax
+lda positionh
 cmp #$01
 beq displaypageone
 cmp #$02

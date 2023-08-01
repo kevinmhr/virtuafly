@@ -144,7 +144,7 @@ bne copyshipcharacterloop
  
 
 init 
-lda #26
+lda #11
 sta positionl
 ldx #0
 ldy #0
@@ -172,8 +172,7 @@ sta $d020
 sta opposebulletcolor
 lda #03
 sta charactercolour
-lda #0
-sta joysttrig
+
 sta bullettrigger
 lda #0
 sta scoreones
@@ -184,6 +183,8 @@ lda #$18
 sta $d018
  lda #02
  sta objectspositionh
+ lda #23
+ sta joysttrig
 lda positionl
  sta bulletpositionl
  
@@ -297,13 +298,19 @@ ldx #0
 loadenemiesloop  
 inx
 lda somenum2,x
-
+eor clscount
+ 
 
  
 sta objecbuffer,x
 cpx #21
  bne loadenemiesloop
+ lda #21
+sta joysttrig
+ 
 mainloop
+
+
 ldx #0 
 wastetime
 inx
@@ -334,10 +341,10 @@ clsloop2
 lda #0
  
  
-sta $d800,y  
-sta $d900,y 
-sta $da00,y
-sta $daf0,y
+sta $d800,x  
+sta $d900,x
+sta $da00,x
+sta $daf0,x
  
  
  cpy #0
@@ -346,7 +353,7 @@ sta $daf0,y
  
 
 
- 
+
  ldy #0
  
 
@@ -388,9 +395,7 @@ ldy #$0
  ldx #0
 ldy #$0
 
-
- 
- 
+jsr scrolling
  
 
 
@@ -427,7 +432,7 @@ jsr scanjoy
 
 
 jsr movejoy
-
+ 
   lda scoreones
  cmp #0
  beq checkscoretens
@@ -439,7 +444,25 @@ jsr movejoy
 jmp mainloop
 
 rts
+scrolling
 
+
+lda scrolltrigger
+cmp #0
+beq somelinedown
+lda scrollvalue
+
+
+adc #5
+
+sta scrollvalue
+somelinedown
+
+lda scrollvalue
+sbc positionlbuffer
+
+sta scrollvalue
+rts
  
 
  
@@ -448,7 +471,7 @@ rts
 scanjoy            
           
            lda $dc00
-          jsr storekey
+       sta lastkey
              
  
            rts
@@ -504,18 +527,7 @@ rts
 loadenemiesbrid
 jsr loadenemies
 rts
-storekey 
-ldy #0
-cpy joysttrig
-beq dojoy
-
-  
-    
  
-rts
-dojoy
-sta lastkey
-rts
  
 
 movejoy 
@@ -582,9 +594,9 @@ sta positionl
 rts
 
 down
-  
  
-   
+
+ 
    lda positionl
  
     clc
@@ -597,13 +609,11 @@ down
     lda #01
  sta scrolltrigger
  
- 
+ignored1
  
   
     rts
 up
- 
- 
  
   lda positionl
     sec
@@ -616,25 +626,29 @@ up
  
     lda #01
  sta scrolltrigger
-rts
+
+ignored2
+ rts
 
  
 
 decreasehibyte   
  
-dec positionh
+ 
+  dec positionh
 lda positionh
-cmp #0
+cmp #2
 beq inchibyteagain
  
  
 rts
-
-
-
+ 
+ 
 
 incresehighbyte   
 clc
+ 
+
 inc positionh
 
 lda positionh
@@ -645,11 +659,11 @@ beq dechibyteagain
 rts
 dechibyteagain
  
-lda #01
+lda #03
 sta positionh
 increaselowbyte
  lda positionl
-adc #23
+ adc #31
  sta positionl
  
 
@@ -658,12 +672,14 @@ rts
 
 
 inchibyteagain
+ 
+ 
 lda #04
 sta positionh
 decreaselowbyte
 
 lda positionl
-sbc #24
+ sbc #32
 sta positionl
  
 rts
@@ -1085,16 +1101,14 @@ inx
 
 
  
+ inc clscount
+;
+
  
 lda objecbuffer,x
  
-sta objecbuffer2 
-ror objecbuffer2
-
- 
-lda objecbuffer2
- 
- 
+ sta objecbuffer,x
+ lda objecbuffer,x
 cmp #255
 beq safearea
 cmp #0
@@ -1297,51 +1311,35 @@ beq bypass3
 adc scoreones
  
  ror
- adc positionl
-adc clscount
-adc #40 
+ ror
+ ror
+ adc scrollvalue
+ 
+ 
 tay
  
  lda #76
 sta $0400,y
-tya
  
-adc #40
-tay
 lda #76
 sta $0500,y
-tya
  
-adc #40
-tay
 
 lda #76
 sta $0600,y
-tya
  
-adc #40
-tay
 lda #76
 sta $0700,y
-lda scoreones
+ 
  lda scoreones
 sta $d800,y
-tya
  
-adc #40
-tay
  lda scoreones
 sta $d900,y 
-tya
  
-adc #40
-tay
  lda scoreones
 sta $da00,y 
-tya
  
-adc #40
-tay
  lda scoreones
 sta $db00,y
 inx
