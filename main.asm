@@ -211,8 +211,11 @@ lda #84
 sta objectschar3
 lda #83
 sta objectschar4
-lda #85
+lda #231
 sta bulletchar 
+lda #220
+sta oppbulletchar
+
 lda #6
 sta bulletcolor
 sta charactercolour
@@ -250,12 +253,10 @@ bne startscreen
 cmp #$6f
 beq copyboxcharacter
 rts
-
 copyboxcharacter 
 ldy #0
 copyboxcharacterloop
-lda bulletchardata,y
-sta $22a8,y
+
 
 lda thebox,y
 sta $2288,y
@@ -265,16 +266,12 @@ lda thebox2,y
 sta $2298,y
 lda thebox3,y
 sta $22a0,y
-lda bulletchardata,y
-sta $22a8,y
-lda oppbulletchardata,y
-sta $22b0,y
-lda sidebulletchardata,y
-sta $22b8,y
+
 iny
-cpy #8
  
 bne copyboxcharacterloop
+
+
 copybulletcharacter 
 ldy #0
 copybulletcharacterloop
@@ -310,57 +307,19 @@ cpx #21
 sta joysttrig
  
 mainloop
-
-
-ldx #0 
-wastetime
-inx
-ldx #255
-cpx $d012
-bne wastetime
-
- ldy #0
  
-clsloop
- 
-
-
-dey
- 
- 
- lda #32
-sta $0400,y  
-sta $0500,y  
-sta $0600,y
-sta $06f0,y
-;cpy #255
-;bne clsloop
-;ldy #$0
-;ldx #0
-clsloop2
-;dex
-lda #0
- 
- 
-sta $d800,x  
-sta $d900,x
-sta $da00,x
-sta $daf0,x
- 
- 
- cpy #0
- 
- bne clsloop
- 
-
-
-
- ldy #0
- 
-
- 
- ldx #$0
 jsr displayroad 
+displyobj 
+ 
+lda $d012
+cmp #255
+bne displyobj
+ 
+
+ ldy #0
+ 
+ 
+
    ldy #0
  
 
@@ -368,7 +327,7 @@ jsr displayroad
  ldx #$0
   
   jsr display  
-   
+   inc objcolour
  
 
  ldx #0
@@ -382,13 +341,19 @@ ldy #$0
 jsr displayoppbullet2
  ldx #0
 ldy #$0
-  inc objcolour
+
 
  
  ldx #$0
- 
- jsr displayobjects 
 
+ jsr displayobjects 
+displyobj2
+  
+ 
+lda $d012
+cmp #255
+bne displyobj2
+ 
  jsr printscore
   
 
@@ -871,7 +836,7 @@ rts
 
 displayoppbulletpg1
 
-lda #86
+lda oppbulletchar
 sta $0400,x
  
 lda opposebulletcolor
@@ -883,7 +848,7 @@ sta $d800,x
 rts
 displayoppbulletpg2
  
-lda #86
+lda oppbulletchar
 sta $0500,x
  
 lda opposebulletcolor
@@ -895,7 +860,7 @@ displayoppbulletpg3
  
  
  
-lda #86
+lda oppbulletchar
 
 sta $0600,x
  
@@ -909,7 +874,7 @@ sta $da00,x
 displayoppbulletpg4
  
 
-lda #86
+lda oppbulletchar
 sta $0700,x
  
  
@@ -1124,7 +1089,6 @@ tay
 bypass
  
  
- 
          
 lda objectschar1
 sta $0400,y
@@ -1296,7 +1260,7 @@ beq showgameover
 rts 
 displayroad 
 
-
+ldx #0
 
 displayroadloop
 clc
@@ -1397,6 +1361,7 @@ addscore
             inc bgcolor
               
 
+   inc objcolour
                  clc
 			    lda #0
 			    ldx #0

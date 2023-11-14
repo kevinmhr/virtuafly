@@ -96,7 +96,7 @@ clc
 lda positionl
 cmp #255
 beq bypass4
-tax
+tay
 lda positionh
 cmp #$01
 beq displaypageone
@@ -112,71 +112,71 @@ rts
 displaypageone
 
 lda character 
-sta $0400,x
+sta $0400,y
 lda character1 
-sta $0401,x
+sta $0401,y
 lda character2 
-sta $0428,x
+sta $0428,y
 lda character3 
-sta $0429,x
+sta $0429,y
 lda charactercolour
-sta $d800,x
-sta $d801,x
-sta $d828,x
-sta $d829,x
+sta $d800,y
+sta $d801,y
+sta $d828,y
+sta $d829,y
 
 rts
 displaypagetwo
 
 lda character 
-sta $0500,x
+sta $0500,y
 lda character1 
-sta $0501,x
+sta $0501,y
 lda character2 
-sta $0528,x
+sta $0528,y
 lda character3 
-sta $0529,x
+sta $0529,y
 lda charactercolour
-sta $d900,x
-sta $d901,x
-sta $d928,x
-sta $d929,x
+sta $d900,y
+sta $d901,y
+sta $d928,y
+sta $d929,y
  
 rts
 displaypagefour
  
 
 lda character
-sta $06d8,x
+sta $06d8,y
 lda character1 
-sta $06d9,x
+sta $06d9,y
 lda character2 
-sta $0700,x
+sta $0700,y
 lda character3 
-sta $0701,x
+sta $0701,y
 lda charactercolour
-sta $dad8,x
-sta $dad9,x
-sta $db00,x
-sta $db01,x
+sta $dad8,y
+sta $dad9,y
+sta $db00,y
+sta $db01,y
 
 rts
 
 displaypagethree
  
 lda character
-sta $0600,x
+sta $0600,y
 lda character1 
-sta $0601,x
+sta $0601,y
 lda character2 
-sta $0628,x
+sta $0628,y
 lda character3 
-sta $0629,x
+sta $0629,y
 lda charactercolour
-sta $da00,x 
-sta $da01,x
-sta $da28,x
-sta $da29,x
+sta $da00,y 
+sta $da01,y
+sta $da28,y
+sta $da29,y
  
 rts
 
@@ -251,7 +251,7 @@ rts
 
 displayoppbullet2pg1
 
-lda #87
+lda #190
 sta $0400,x
  
 lda opposebulletcolor
@@ -263,7 +263,7 @@ sta $d800,x
 rts
 displayoppbullet2pg2
  
-lda #87
+lda #190
 sta $0500,x
  
 lda opposebulletcolor
@@ -275,7 +275,7 @@ displayoppbullet2pg3
  
  
  
-lda #87
+lda #190
 
 sta $0600,x
  
@@ -289,7 +289,7 @@ sta $da00,x
 displayoppbullet2pg4
  
 
-lda #87
+lda #190
 sta $0700,x
  
  
